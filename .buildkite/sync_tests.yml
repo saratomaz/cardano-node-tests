@@ -3,7 +3,7 @@ steps:
     command:
       - 'mkdir -p /scratch/cardano-node-tests'
       - echo $PWD
-      - python3 ./sync_tests/sync_test.py -t1 "1.26.1" -e "mainnet"'
+      - python3 ./sync_tests/sync_test.py -t1 "1.26.1" -e "mainnet"
     branches: "dorin/*"
     timeout_in_minutes: 600
     agents:
