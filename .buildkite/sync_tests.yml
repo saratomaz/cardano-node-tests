@@ -1,10 +1,11 @@
 steps:
   - label: 'run the cardano node sync test on Mainnet using a Linux machine'
     command:
-      - echo $PWD
-      - nix-shell --run 'python ./sync_tests/sync_test.py -t1 "1.26.1" -e "mainnet"'
+      - nix-shell --run 'python ./sync_tests/sync_test.py -t1 "1.26.1" -e "shelley_qa"'
     branches: "dorin/*"
     timeout_in_minutes: 600
     agents:
       system: x86_64-linux
       queue: benchmark
+    artifact_paths:
+      - 'logfile.log'
