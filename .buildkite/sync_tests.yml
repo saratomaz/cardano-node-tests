@@ -1,0 +1,9 @@
+steps:
+  - label: 'run the cardano node sync test on Mainnet using a Linux machine'
+    command:
+      - 'python3 ./sync_tests/sync_test.py -t1 "1.26.1" -e "mainnet"'
+    branches: "dorin/*"
+    timeout_in_minutes: 600
+    agents:
+      system: x86_64-linux
+      queue: benchmark
