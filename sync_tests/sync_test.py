@@ -31,7 +31,7 @@ from psutil import process_iter
 #     - create visuals displaying how much time it took for each epoch to be synced from clean state
 #     - make all the calcs in python --> export this in order to import it in a separate dashboard in PowerBi --> epoch_no, synced_time_in_secs
 #     - or we can enable "cardano_node_metrics_epoch_int" and collect this from logs at the end of the test
-# grep "new tip" node | sed 's/.*\(2021-04-.* UTC\)].*slot \(.*\)/\1,\2/' gives you a csv file with a timestamp and a slot number that you can plot in what-ever-program.
+# grep "new tip" relay.log | sed 's/.*\(2021-04-.* UTC\)].*slot \(.*\)/\1,\2/' gives you a csv file with a timestamp and a slot number that you can plot in what-ever-program.
 
 
 NODE = "./cardano-node"
@@ -324,8 +324,6 @@ def wait_for_node_to_start(tag_no):
 
 def get_current_tip(tag_no, wait=False):
     # tag_no should have this format: 1.23.0, 1.24.1, etc
-    os.chdir(Path(ROOT_TEST_PATH))
-
     if int(tag_no.split(".")[1]) < 24:
         cmd = CLI + " shelley query tip " + get_testnet_value()
     else:
@@ -357,7 +355,6 @@ def get_current_tip(tag_no, wait=False):
 
 
 def get_node_version():
-    # os.chdir(Path(CARDANO_NODE_TESTS_PATH))
     try:
         cmd = CLI + " --version"
         output = (
@@ -489,12 +486,13 @@ def get_size(start_path='.'):
 
 
 def wait_for_node_to_sync(env, tag_no):
-    eras_start_time_dict = OrderedDict()
+    era_details_dict = OrderedDict()
+    epoch_details_dict = OrderedDict()
     count = 0
 
     # TODO: remove below line
     # latest_slot_no = get_calculated_slot_no(env)
-    latest_slot_no = 5877064
+    latest_slot_no = 80000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
@@ -505,13 +503,19 @@ def wait_for_node_to_sync(env, tag_no):
               f" - actual_epoch: {actual_epoch} "
               f" - actual_block: {actual_block} "
               f" - actual_slot : {actual_slot}")
-        if actual_era not in eras_start_time_dict:
-            if actual_epoch is None:
-                # TODO: to remove this after 'tip' bug returning None/null will be fixed
-                actual_epoch = 1
+        if actual_era not in era_details_dict:
+            # if actual_epoch is None:
+            #     # TODO: to remove this after 'tip' bug returning None/null will be fixed
+            #     # https://github.com/input-output-hk/cardano-node/issues/2568
+            #     actual_epoch = 1
             actual_era_start_time = get_epoch_start_datetime(env, actual_epoch)
-            actual_era_dict = {"start_epoch": actual_epoch, "start_time": actual_era_start_time}
-            eras_start_time_dict[actual_era] = actual_era_dict
+            current_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            actual_era_dict = {"start_epoch": actual_epoch, "start_time": actual_era_start_time, "start_sync_time": current_time}
+            era_details_dict[actual_era] = actual_era_dict
+        if actual_epoch not in epoch_details_dict:
+            current_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            actual_epoch_dict = {"start_sync_time": current_time}
+            epoch_details_dict[actual_epoch] = actual_epoch_dict
 
         time.sleep(1)
         count += 1
@@ -529,43 +533,79 @@ def wait_for_node_to_sync(env, tag_no):
     os.chdir(Path(ROOT_TEST_PATH))
     print(f"Sync done!; latest_chunk_no: {latest_chunk_no}")
 
-    return sync_time_seconds, latest_chunk_no, eras_start_time_dict
+    # calculate and add "end_sync_time" and "sync_duration_secs" for each era;
+    # for the last era, "end_sync_time" = current_utc_time / end_of_sync_time
+    eras_list = list(era_details_dict.keys())
+    for era in eras_list:
+        if era == eras_list[-1]:
+            end_sync_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            end_sync_time = era_details_dict[eras_list[eras_list.index(era) + 1]]["start_sync_time"]
+        actual_era_dict = era_details_dict[era]
+        actual_era_dict["end_sync_time"] = end_sync_time
+        actual_era_dict["sync_duration_secs"] = date_diff_in_seconds(
+            datetime.strptime(end_sync_time, "%Y-%m-%dT%H:%M:%SZ"),
+            datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
+        era_details_dict[era] = actual_era_dict
+
+    # calculate and add "end_sync_time" and "sync_duration_secs" for each epoch;
+    epoch_list = list(epoch_details_dict.keys())
+    for epoch in epoch_list:
+        if epoch == epoch_list[-1]:
+            epoch_end_sync_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            epoch_end_sync_time = epoch_details_dict[epoch_list[epoch_list.index(epoch) + 1]]["start_sync_time"]
+        actual_epoch_dict = epoch_details_dict[epoch]
+        actual_epoch_dict["end_sync_time"] = epoch_end_sync_time
+        actual_epoch_dict["sync_duration_secs"] = date_diff_in_seconds(
+            datetime.strptime(epoch_end_sync_time, "%Y-%m-%dT%H:%M:%SZ"),
+            datetime.strptime(actual_epoch_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
+        epoch_details_dict[epoch] = actual_epoch_dict
+
+    return sync_time_seconds, latest_chunk_no, era_details_dict, epoch_details_dict
 
 
 def date_diff_in_seconds(dt2, dt1):
     timedelta = dt2 - dt1
-    return timedelta.days * 24 * 3600 + timedelta.seconds
+    return int(timedelta.days * 24 * 3600 + timedelta.seconds)
 
 
-def get_calculated_slot_no(env):
-    global shelley_start_time, byron_start_time
+# def get_calculated_slot_no(env):
+#     global shelley_start_time, byron_start_time
+#
+#     if env == "testnet":
+#         byron_start_time = datetime.strptime("2019-07-24 20:20:16", "%Y-%m-%d %H:%M:%S")
+#         shelley_start_time = datetime.strptime("2020-07-28 20:20:16", "%Y-%m-%d %H:%M:%S")
+#     elif env == "staging":
+#         byron_start_time = datetime.strptime("2017-09-26 18:23:33", "%Y-%m-%d %H:%M:%S")
+#         shelley_start_time = datetime.strptime("2020-08-01 18:23:33", "%Y-%m-%d %H:%M:%S")
+#     elif env == "mainnet":
+#         byron_start_time = datetime.strptime("2017-09-23 21:44:51", "%Y-%m-%d %H:%M:%S")
+#         shelley_start_time = datetime.strptime("2020-07-29 21:44:51", "%Y-%m-%d %H:%M:%S")
+#     elif env == "shelley_qa":
+#         byron_start_time = datetime.strptime("2020-08-17 13:00:00", "%Y-%m-%d %H:%M:%S")
+#         shelley_start_time = datetime.strptime("2020-08-17 17:00:00", "%Y-%m-%d %H:%M:%S")
+#
+#     current_time = datetime.utcnow()
+#
+#     latest_slot_no = int(date_diff_in_seconds(shelley_start_time, byron_start_time) / 20 +
+#                          date_diff_in_seconds(current_time, shelley_start_time))
+#
+#     print("----------------------------------------------------------------")
+#     print(f"byron_start_time        : {byron_start_time}")
+#     print(f"shelley_start_time      : {shelley_start_time}")
+#     print(f"current_utc_time        : {current_time}")
+#     print(f"latest_slot_no          : {latest_slot_no}")
+#     print("----------------------------------------------------------------")
+#
+#     return latest_slot_no
 
-    if env == "testnet":
-        byron_start_time = datetime.strptime("2019-07-24 20:20:16", "%Y-%m-%d %H:%M:%S")
-        shelley_start_time = datetime.strptime("2020-07-28 20:20:16", "%Y-%m-%d %H:%M:%S")
-    elif env == "staging":
-        byron_start_time = datetime.strptime("2017-09-26 18:23:33", "%Y-%m-%d %H:%M:%S")
-        shelley_start_time = datetime.strptime("2020-08-01 18:23:33", "%Y-%m-%d %H:%M:%S")
-    elif env == "mainnet":
-        byron_start_time = datetime.strptime("2017-09-23 21:44:51", "%Y-%m-%d %H:%M:%S")
-        shelley_start_time = datetime.strptime("2020-07-29 21:44:51", "%Y-%m-%d %H:%M:%S")
-    elif env == "shelley_qa":
-        byron_start_time = datetime.strptime("2020-08-17 13:00:00", "%Y-%m-%d %H:%M:%S")
-        shelley_start_time = datetime.strptime("2020-08-17 17:00:00", "%Y-%m-%d %H:%M:%S")
 
-    current_time = datetime.utcnow()
-
-    latest_slot_no = int(date_diff_in_seconds(shelley_start_time, byron_start_time) / 20 +
-                         date_diff_in_seconds(current_time, shelley_start_time))
-
-    print("----------------------------------------------------------------")
-    print(f"byron_start_time        : {byron_start_time}")
-    print(f"shelley_start_time      : {shelley_start_time}")
-    print(f"current_utc_time        : {current_time}")
-    print(f"latest_slot_no          : {latest_slot_no}")
-    print("----------------------------------------------------------------")
-
-    return latest_slot_no
+def get_no_of_slots_per_era(era_name, era_start_time, era_end_time):
+    slot_interval = 1
+    if era_name.low() == "byron":
+        slot_interval = 20
+    return int(date_diff_in_seconds(era_end_time, era_start_time) / slot_interval)
 
 
 def main():
@@ -622,18 +662,27 @@ def main():
         secs_to_start1 = start_node_windows(env, tag_no1)
 
     print(" - waiting for the node to sync")
-    (sync_time_seconds, latest_chunk_no, eras_start_time_dict) = wait_for_node_to_sync(env, tag_no1)
+    (sync_time_seconds, latest_chunk_no, era_details_dict, epoch_details_dict) = wait_for_node_to_sync(env, tag_no1)
 
     print("++++++++++++++++++++++++++++++++++++++++++++++")
-    print(f"eras_start_time_dict: {eras_start_time_dict}")
-    for era in eras_start_time_dict:
-        print(f"{era} --> {eras_start_time_dict[era]}")
+    print(f"eras_start_time_dict: {era_details_dict}")
+    for era in era_details_dict:
+        print(f"{era} --> {era_details_dict[era]}")
+        # get_no_of_slots_per_era(era_name, era_start_time, era_end_time)
+
+    print("++++++++++++++++++++++++++++++++++++++++++++++")
+    for epoch in epoch_details_dict:
+        print(f"{epoch} --> {epoch_details_dict[epoch]}")
     print("++++++++++++++++++++++++++++++++++++++++++++++")
 
     end_sync_time1 = get_current_date_time()
     print(f"secs_to_start1            : {secs_to_start1}")
     print(f"start_sync_time1          : {start_sync_time1}")
     print(f"end_sync_time1            : {end_sync_time1}")
+
+
+
+
     # print(f"byron_sync_time_seconds1  : {byron_sync_time_seconds1}")
     # print(
     #     f"byron_sync_time1  : {time.strftime('%H:%M:%S', time.gmtime(byron_sync_time_seconds1))}"
