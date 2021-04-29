@@ -504,10 +504,10 @@ def wait_for_node_to_sync(env, tag_no):
               f" - actual_block: {actual_block} "
               f" - actual_slot : {actual_slot}")
         if actual_era not in era_details_dict:
-            # if actual_epoch is None:
-            #     # TODO: to remove this after 'tip' bug returning None/null will be fixed
-            #     # https://github.com/input-output-hk/cardano-node/issues/2568
-            #     actual_epoch = 1
+            if actual_epoch is None:
+                # TODO: to remove this after 'tip' bug returning None/null will be fixed
+                # https://github.com/input-output-hk/cardano-node/issues/2568
+                actual_epoch = 1
             actual_era_start_time = get_epoch_start_datetime(env, actual_epoch)
             current_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
             actual_era_dict = {"start_epoch": actual_epoch, "start_time": actual_era_start_time, "start_sync_time": current_time}
