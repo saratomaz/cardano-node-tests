@@ -604,7 +604,7 @@ def date_diff_in_seconds(dt2, dt1):
 
 def get_no_of_slots_per_era(era_name, era_start_time, era_end_time):
     slot_interval = 1
-    if era_name.low() == "byron":
+    if era_name.lower() == "byron":
         slot_interval = 20
     return int(date_diff_in_seconds(era_end_time, era_start_time) / slot_interval)
 
