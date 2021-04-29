@@ -533,7 +533,7 @@ def wait_for_node_to_sync(env, tag_no):
     os.chdir(Path(ROOT_TEST_PATH))
     print(f"Sync done!; latest_chunk_no: {latest_chunk_no}")
 
-    # calculate and add "end_sync_time" and "sync_duration_secs" for each era;
+    # calculate and add "end_sync_time", "slots_in_era" and "sync_duration_secs" for each era;
     # for the last era, "end_sync_time" = current_utc_time / end_of_sync_time
     eras_list = list(era_details_dict.keys())
     for era in eras_list:
@@ -543,6 +543,7 @@ def wait_for_node_to_sync(env, tag_no):
             end_sync_time = era_details_dict[eras_list[eras_list.index(era) + 1]]["start_sync_time"]
         actual_era_dict = era_details_dict[era]
         actual_era_dict["end_sync_time"] = end_sync_time
+        actual_era_dict["slots_in_era"] = get_no_of_slots_per_era(era, actual_era_dict["start_sync_time"], actual_era_dict["end_sync_time"] )
         actual_era_dict["sync_duration_secs"] = date_diff_in_seconds(
             datetime.strptime(end_sync_time, "%Y-%m-%dT%H:%M:%SZ"),
             datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
@@ -562,7 +563,7 @@ def wait_for_node_to_sync(env, tag_no):
             datetime.strptime(actual_epoch_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
         epoch_details_dict[epoch] = actual_epoch_dict
 
-    return sync_time_seconds, latest_chunk_no, era_details_dict, epoch_details_dict
+    return sync_time_seconds, latest_slot_no, latest_chunk_no, era_details_dict, epoch_details_dict
 
 
 def date_diff_in_seconds(dt2, dt1):
@@ -662,14 +663,12 @@ def main():
         secs_to_start1 = start_node_windows(env, tag_no1)
 
     print(" - waiting for the node to sync")
-    (sync_time_seconds, latest_chunk_no, era_details_dict, epoch_details_dict) = wait_for_node_to_sync(env, tag_no1)
+    sync_time_seconds, latest_slot_no, latest_chunk_no, era_details_dict, epoch_details_dict = wait_for_node_to_sync(env, tag_no1)
 
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     print(f"eras_start_time_dict: {era_details_dict}")
     for era in era_details_dict:
         print(f"{era} --> {era_details_dict[era]}")
-        # get_no_of_slots_per_era(era_name, era_start_time, era_end_time)
-
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     for epoch in epoch_details_dict:
         print(f"{epoch} --> {epoch_details_dict[epoch]}")
@@ -679,42 +678,6 @@ def main():
     print(f"secs_to_start1            : {secs_to_start1}")
     print(f"start_sync_time1          : {start_sync_time1}")
     print(f"end_sync_time1            : {end_sync_time1}")
-
-
-
-
-    # print(f"byron_sync_time_seconds1  : {byron_sync_time_seconds1}")
-    # print(
-    #     f"byron_sync_time1  : {time.strftime('%H:%M:%S', time.gmtime(byron_sync_time_seconds1))}"
-    # )
-    # print(f"shelley_sync_time_seconds1: {shelley_sync_time_seconds1}")
-    # print(
-    #     f"shelley_sync_time1: {time.strftime('%H:%M:%S', time.gmtime(shelley_sync_time_seconds1))}"
-    # )
-    # print(f"allegra_sync_time_seconds1: {allegra_sync_time_seconds1}")
-    # print(
-    #     f"allegra_sync_time_seconds1: {time.strftime('%H:%M:%S', time.gmtime(allegra_sync_time_seconds1))}"
-    # )
-    # print(f"mary_sync_time_seconds1: {mary_sync_time_seconds1}")
-    # print(
-    #     f"mary_sync_time_seconds1: {time.strftime('%H:%M:%S', time.gmtime(mary_sync_time_seconds1))}"
-    # )
-
-    latest_block_no1 = get_current_tip(tag_no1)[0]
-    latest_slot_no1 = get_current_tip(tag_no1)[2]
-    # sync_speed_bps1 = int(
-    #     latest_block_no1 / (
-    #             byron_sync_time_seconds1 + shelley_sync_time_seconds1 + allegra_sync_time_seconds1 + mary_sync_time_seconds1)
-    # )
-    # sync_speed_sps1 = int(
-    #     latest_slot_no1 / (
-    #             byron_sync_time_seconds1 + shelley_sync_time_seconds1 + allegra_sync_time_seconds1 + mary_sync_time_seconds1)
-    # )
-    # print(f"sync_speed_bps1   : {sync_speed_bps1}")
-    # print(f"sync_speed_sps1   : {sync_speed_sps1}")
-    #
-    # total_chunks1 = int(newest_chunk1.split(".")[0])
-    # print(f"downloaded chunks1: {total_chunks1}")
 
     (
         cardano_cli_version2,
@@ -754,56 +717,11 @@ def main():
         start_sync2 = time.perf_counter()
 
         print(f" - waiting for the node to sync - using tag_no2: {tag_no2}")
-        (
-            newest_chunk2,
-            byron_sync_time_seconds2,
-            shelley_sync_time_seconds2,
-            allegra_sync_time_seconds2,
-            mary_sync_time_seconds2,
-            sync_details_dict2
-        ) = wait_for_node_to_sync(env, tag_no2)
-
-        end_sync2 = time.perf_counter()
-        end_sync_time2 = get_current_date_time()
-        sync_time_after_restart_seconds = int(end_sync2 - start_sync2)
-
-        print(f"secs_to_start2    : {secs_to_start2}   = ledger revalidation time")
-        print(f"start_sync_time2  : {start_sync_time2}")
-        print(f"end_sync_time2    : {end_sync_time2}")
-        print(f"byron_sync_time_seconds2  : {byron_sync_time_seconds2}")
-        print(f"byron_sync_time2  : "
-              f"{time.strftime('%H:%M:%S', time.gmtime(byron_sync_time_seconds2))}")
-        print(f"shelley_sync_time_seconds2: {shelley_sync_time_seconds2}")
-        print(f"shelley_sync_time2: "
-              f"{time.strftime('%H:%M:%S', time.gmtime(shelley_sync_time_seconds2))}")
-        print(f"allegra_sync_time_seconds2: {allegra_sync_time_seconds2}")
-        print(f"allegra_sync_time_seconds2: "
-              f"{time.strftime('%H:%M:%S', time.gmtime(allegra_sync_time_seconds2))}")
-        print(f"mary_sync_time_seconds2: {mary_sync_time_seconds2}")
-        print(f"mary_sync_time_seconds2: "
-              f"{time.strftime('%H:%M:%S', time.gmtime(mary_sync_time_seconds2))}")
-
-        latest_block_no2 = get_current_tip(tag_no2)[0]
-        latest_slot_no2 = get_current_tip(tag_no2)[2]
-        sync_speed_bps2 = int(
-            (latest_block_no2 - latest_block_no1)
-            / (
-                    byron_sync_time_seconds2 + shelley_sync_time_seconds2 + allegra_sync_time_seconds2 + mary_sync_time_seconds2)
-        )
-        sync_speed_sps2 = int(
-            (latest_slot_no2 - latest_slot_no1)
-            / (
-                    byron_sync_time_seconds2 + shelley_sync_time_seconds2 + allegra_sync_time_seconds2 + mary_sync_time_seconds2)
-        )
-        print(f"sync_speed_bps2   : {sync_speed_bps2}")
-        print(f"sync_speed_sps2   : {sync_speed_sps2}")
-
-        # total_chunks2 = int(newest_chunk1.split(".")[0])
-        print(f"downloaded chunks2: {total_chunks2}")
+        sync_time_seconds2, latest_slot_no2, latest_chunk_no2, era_details_dict2, epoch_details_dict2 = wait_for_node_to_sync(env, tag_no2)
 
     chain_size = get_size(Path(ROOT_TEST_PATH) / "db")
 
-    print("move to 'cardano_node_tests_path/scripts'")
+    print("******* move to 'cardano_node_tests_path/scripts'")
     os.chdir(Path(ROOT_TEST_PATH) / "sync_tests")
     current_directory = Path.cwd()
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
