@@ -256,25 +256,25 @@ def get_node_config_files(env):
         + env
         + "-config.json",
         env + "-config.json",
-        )
+    )
     urllib.request.urlretrieve(
         "https://hydra.iohk.io/job/Cardano/iohk-nix/cardano-deployment/latest-finished/download/1/"
         + env
         + "-byron-genesis.json",
         env + "-byron-genesis.json",
-        )
+    )
     urllib.request.urlretrieve(
         "https://hydra.iohk.io/job/Cardano/iohk-nix/cardano-deployment/latest-finished/download/1/"
         + env
         + "-shelley-genesis.json",
         env + "-shelley-genesis.json",
-        )
+    )
     urllib.request.urlretrieve(
         "https://hydra.iohk.io/job/Cardano/iohk-nix/cardano-deployment/latest-finished/download/1/"
         + env
         + "-topology.json",
         env + "-topology.json",
-        )
+    )
 
 
 def set_node_socket_path_env_var():
@@ -485,14 +485,37 @@ def get_size(start_path='.'):
     return total_size
 
 
+def get_calculated_slot_no(env):
+    current_time = datetime.utcnow()
+    shelley_start_time = byron_start_time = current_time
+
+    if env == "testnet":
+        byron_start_time = datetime.strptime("2019-07-24 20:20:16", "%Y-%m-%d %H:%M:%S")
+        shelley_start_time = datetime.strptime("2020-07-28 20:20:16", "%Y-%m-%d %H:%M:%S")
+    elif env == "staging":
+        byron_start_time = datetime.strptime("2017-09-26 18:23:33", "%Y-%m-%d %H:%M:%S")
+        shelley_start_time = datetime.strptime("2020-08-01 18:23:33", "%Y-%m-%d %H:%M:%S")
+    elif env == "mainnet":
+        byron_start_time = datetime.strptime("2017-09-23 21:44:51", "%Y-%m-%d %H:%M:%S")
+        shelley_start_time = datetime.strptime("2020-07-29 21:44:51", "%Y-%m-%d %H:%M:%S")
+    elif env == "shelley_qa":
+        byron_start_time = datetime.strptime("2020-08-17 13:00:00", "%Y-%m-%d %H:%M:%S")
+        shelley_start_time = datetime.strptime("2020-08-17 17:00:00", "%Y-%m-%d %H:%M:%S")
+
+    last_slot_no = int(date_diff_in_seconds(shelley_start_time, byron_start_time) / 20 +
+                       date_diff_in_seconds(current_time, shelley_start_time))
+
+    return last_slot_no
+
+
 def wait_for_node_to_sync(env, tag_no):
     era_details_dict = OrderedDict()
     epoch_details_dict = OrderedDict()
     count = 0
 
     # TODO: remove below line
-    # last_slot_no = get_calculated_slot_no(env)
-    last_slot_no = 80000
+    last_slot_no = get_calculated_slot_no(env)
+    # last_slot_no = 80000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
@@ -510,7 +533,8 @@ def wait_for_node_to_sync(env, tag_no):
                 actual_epoch = 1
             actual_era_start_time = get_epoch_start_datetime(env, actual_epoch)
             current_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            actual_era_dict = {"start_epoch": actual_epoch, "start_time": actual_era_start_time, "start_sync_time": current_time}
+            actual_era_dict = {"start_epoch": actual_epoch, "start_time": actual_era_start_time,
+                               "start_sync_time": current_time}
             era_details_dict[actual_era] = actual_era_dict
         if actual_epoch not in epoch_details_dict:
             current_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -550,7 +574,8 @@ def wait_for_node_to_sync(env, tag_no):
         actual_era_dict["sync_duration_secs"] = date_diff_in_seconds(
             datetime.strptime(end_sync_time, "%Y-%m-%dT%H:%M:%SZ"),
             datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
-        actual_era_dict["sync_speed_sps"] = int(actual_era_dict["slots_in_era"] / actual_era_dict["sync_duration_secs"])
+        actual_era_dict["sync_speed_sps"] = int(
+            actual_era_dict["slots_in_era"] / actual_era_dict["sync_duration_secs"])
         era_details_dict[era] = actual_era_dict
 
     # calculate and add "end_sync_time" and "sync_duration_secs" for each epoch;
@@ -559,7 +584,8 @@ def wait_for_node_to_sync(env, tag_no):
         if epoch == epoch_list[-1]:
             epoch_end_sync_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
-            epoch_end_sync_time = epoch_details_dict[epoch_list[epoch_list.index(epoch) + 1]]["start_sync_time"]
+            epoch_end_sync_time = epoch_details_dict[epoch_list[epoch_list.index(epoch) + 1]][
+                "start_sync_time"]
         actual_epoch_dict = epoch_details_dict[epoch]
         actual_epoch_dict["end_sync_time"] = epoch_end_sync_time
         actual_epoch_dict["sync_duration_secs"] = date_diff_in_seconds(
@@ -637,7 +663,8 @@ def main():
         secs_to_start1 = start_node_windows(env, tag_no1)
 
     print(" - waiting for the node to sync")
-    sync_time_seconds, latest_slot_no, latest_chunk_no, era_details_dict, epoch_details_dict = wait_for_node_to_sync(env, tag_no1)
+    sync_time_seconds, latest_slot_no, latest_chunk_no, era_details_dict, epoch_details_dict = wait_for_node_to_sync(
+        env, tag_no1)
 
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     print(f"eras_start_time_dict: {era_details_dict}")
@@ -691,7 +718,8 @@ def main():
         start_sync2 = time.perf_counter()
 
         print(f" - waiting for the node to sync - using tag_no2: {tag_no2}")
-        sync_time_seconds2, latest_slot_no2, latest_chunk_no2, era_details_dict2, epoch_details_dict2 = wait_for_node_to_sync(env, tag_no2)
+        sync_time_seconds2, latest_slot_no2, latest_chunk_no2, era_details_dict2, epoch_details_dict2 = wait_for_node_to_sync(
+            env, tag_no2)
 
     chain_size = get_size(Path(ROOT_TEST_PATH) / "db")
 
@@ -756,10 +784,12 @@ if __name__ == "__main__":
         help="the environment on which to run the tests - shelley_qa, testnet, staging or mainnet.",
     )
     parser.add_argument(
-        "-dt1", "--db_sync_tag_no1", help="db_sync tag number1 - used for initial sync, from clean state"
+        "-dt1", "--db_sync_tag_no1",
+        help="db_sync tag number1 - used for initial sync, from clean state"
     )
     parser.add_argument(
-        "-dt2", "--db_sync_tag_no2", help="db_sync tag number2 - used for final sync, from existing state"
+        "-dt2", "--db_sync_tag_no2",
+        help="db_sync tag number2 - used for final sync, from existing state"
     )
 
     args = parser.parse_args()
