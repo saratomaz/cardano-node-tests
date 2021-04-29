@@ -543,7 +543,10 @@ def wait_for_node_to_sync(env, tag_no):
             end_sync_time = era_details_dict[eras_list[eras_list.index(era) + 1]]["start_sync_time"]
         actual_era_dict = era_details_dict[era]
         actual_era_dict["end_sync_time"] = end_sync_time
-        actual_era_dict["slots_in_era"] = get_no_of_slots_per_era(era, actual_era_dict["start_sync_time"], actual_era_dict["end_sync_time"] )
+        actual_era_dict["slots_in_era"] = get_no_of_slots_per_era(
+            era,
+            datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"),
+            datetime.strptime(actual_era_dict["end_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
         actual_era_dict["sync_duration_secs"] = date_diff_in_seconds(
             datetime.strptime(end_sync_time, "%Y-%m-%dT%H:%M:%SZ"),
             datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
@@ -567,39 +570,9 @@ def wait_for_node_to_sync(env, tag_no):
 
 
 def date_diff_in_seconds(dt2, dt1):
+    # dt1 and dt2 should be datetime types
     timedelta = dt2 - dt1
     return int(timedelta.days * 24 * 3600 + timedelta.seconds)
-
-
-# def get_calculated_slot_no(env):
-#     global shelley_start_time, byron_start_time
-#
-#     if env == "testnet":
-#         byron_start_time = datetime.strptime("2019-07-24 20:20:16", "%Y-%m-%d %H:%M:%S")
-#         shelley_start_time = datetime.strptime("2020-07-28 20:20:16", "%Y-%m-%d %H:%M:%S")
-#     elif env == "staging":
-#         byron_start_time = datetime.strptime("2017-09-26 18:23:33", "%Y-%m-%d %H:%M:%S")
-#         shelley_start_time = datetime.strptime("2020-08-01 18:23:33", "%Y-%m-%d %H:%M:%S")
-#     elif env == "mainnet":
-#         byron_start_time = datetime.strptime("2017-09-23 21:44:51", "%Y-%m-%d %H:%M:%S")
-#         shelley_start_time = datetime.strptime("2020-07-29 21:44:51", "%Y-%m-%d %H:%M:%S")
-#     elif env == "shelley_qa":
-#         byron_start_time = datetime.strptime("2020-08-17 13:00:00", "%Y-%m-%d %H:%M:%S")
-#         shelley_start_time = datetime.strptime("2020-08-17 17:00:00", "%Y-%m-%d %H:%M:%S")
-#
-#     current_time = datetime.utcnow()
-#
-#     latest_slot_no = int(date_diff_in_seconds(shelley_start_time, byron_start_time) / 20 +
-#                          date_diff_in_seconds(current_time, shelley_start_time))
-#
-#     print("----------------------------------------------------------------")
-#     print(f"byron_start_time        : {byron_start_time}")
-#     print(f"shelley_start_time      : {shelley_start_time}")
-#     print(f"current_utc_time        : {current_time}")
-#     print(f"latest_slot_no          : {latest_slot_no}")
-#     print("----------------------------------------------------------------")
-#
-#     return latest_slot_no
 
 
 def get_no_of_slots_per_era(era_name, era_start_time, era_end_time):
