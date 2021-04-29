@@ -19,15 +19,15 @@ from psutil import process_iter
 # python3 ./sync_tests/sync_test.py -d -t1 << tag_no1 >> -t2 << tag_no2 >> -e << env_type >>
 # 1. download node files and pre-built files
 # - enable metrics for RAM and CPU
-# 2. start node and wait to sync
-# 3. calculate time to sync per era
-# 4. calculate slots per era --> these 2 will let us calculate sync speed in sps
-# 5. other calcs - db size, etc
+# 2. start node and wait to sync - DONE
+# 3. calculate time to sync per era - DONE
+# 4. calculate slots per era --> these 2 will let us calculate sync speed in sps - DONE
+# 5. other calcs - db size, etc - DONE
 # 6. save log results like
 # - [producer:cardano.node.LeadershipCheck:Info:415] [2021-04-27 14:26:55.00 UTC] {"kind":"TraceStartLeadershipCheck","chainDensity":5.066529e-2,"slot":27967324,"delegMapSize":468179,"utxoSize":2028880,"credentials":"Cardano"}
 #     - save: delegMapSize, utxoSize + timestamp
 # - collect RAM and CPU metrics from logs + timestamps
-# - collect the tip + timestamp + tip from log lines containing "Chain extended"
+# - collect the tip + timestamp from log lines containing "Chain extended"
 #     - create visuals displaying how much time it took for each epoch to be synced from clean state
 #     - make all the calcs in python --> export this in order to import it in a separate dashboard in PowerBi --> epoch_no, synced_time_in_secs
 #     - or we can enable "cardano_node_metrics_epoch_int" and collect this from logs at the end of the test
@@ -491,14 +491,14 @@ def wait_for_node_to_sync(env, tag_no):
     count = 0
 
     # TODO: remove below line
-    # latest_slot_no = get_calculated_slot_no(env)
-    latest_slot_no = 80000
+    # last_slot_no = get_calculated_slot_no(env)
+    last_slot_no = 80000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
     start_sync = time.perf_counter()
 
-    while actual_slot <= latest_slot_no:
+    while actual_slot <= last_slot_no:
         print(f"actual_era  : {actual_era} "
               f" - actual_epoch: {actual_epoch} "
               f" - actual_block: {actual_block} "
@@ -533,7 +533,7 @@ def wait_for_node_to_sync(env, tag_no):
     os.chdir(Path(ROOT_TEST_PATH))
     print(f"Sync done!; latest_chunk_no: {latest_chunk_no}")
 
-    # calculate and add "end_sync_time", "slots_in_era" and "sync_duration_secs" for each era;
+    # calculate and add "end_sync_time", "slots_in_era", "sync_duration_secs" and "sync_speed_sps" for each era;
     # for the last era, "end_sync_time" = current_utc_time / end_of_sync_time
     eras_list = list(era_details_dict.keys())
     for era in eras_list:
@@ -550,6 +550,7 @@ def wait_for_node_to_sync(env, tag_no):
         actual_era_dict["sync_duration_secs"] = date_diff_in_seconds(
             datetime.strptime(end_sync_time, "%Y-%m-%dT%H:%M:%SZ"),
             datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
+        actual_era_dict["sync_speed_sps"] = int(actual_era_dict["slots_in_era"] / actual_era_dict["sync_duration_secs"])
         era_details_dict[era] = actual_era_dict
 
     # calculate and add "end_sync_time" and "sync_duration_secs" for each epoch;
@@ -566,7 +567,7 @@ def wait_for_node_to_sync(env, tag_no):
             datetime.strptime(actual_epoch_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
         epoch_details_dict[epoch] = actual_epoch_dict
 
-    return sync_time_seconds, latest_slot_no, latest_chunk_no, era_details_dict, epoch_details_dict
+    return sync_time_seconds, last_slot_no, latest_chunk_no, era_details_dict, epoch_details_dict
 
 
 def date_diff_in_seconds(dt2, dt1):
