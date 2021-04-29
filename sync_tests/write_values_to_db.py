@@ -4,7 +4,7 @@ from pathlib import Path
 import argparse
 import pandas as pd
 
-database_name = r"sync_results.db"
+database_name = r"sync_tests_results.db"
 results_file_name = r"sync_results.log"
 
 
