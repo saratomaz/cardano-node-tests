@@ -514,8 +514,8 @@ def wait_for_node_to_sync(env, tag_no):
     epoch_details_dict = OrderedDict()
 
     # TODO: remove below line
-    # last_slot_no = get_calculated_slot_no(env)
-    last_slot_no = 80000
+    last_slot_no = get_calculated_slot_no(env)
+    # last_slot_no = 80000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
@@ -730,16 +730,14 @@ def main():
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
 
     # Add the test values into the local copy of the database (to be pushed into master)
-    print("Sync test ended; Creating the `test_values_dict` dict with the test values")
-
+    print("Node sync test ended; Creating the `test_values_dict` dict with the test values")
     # TODO: add db/table columns for the new eras /
     #  check if there are columns for each era, if not create them
     print("++++++++++++++++++++++++++++++++++++++++++++++")
-    print(f"eras_start_time_dict: {era_details_dict1}")
     test_values_dict = OrderedDict()
     epoch_details = OrderedDict()
     for era in era_details_dict1:
-        print(f"{era} --> {era_details_dict1[era]}")
+        print(f"  *** {era} --> {era_details_dict1[era]}")
         test_values_dict[str(era + "_start_time")] = era_details_dict1[era]["start_time"]
         test_values_dict[str(era + "_start_epoch")] = era_details_dict1[era]["start_epoch"]
         test_values_dict[str(era + "_slots_in_era")] = era_details_dict1[era]["slots_in_era"]
