@@ -15,7 +15,7 @@ from datetime import datetime
 from pathlib import Path
 
 from psutil import process_iter
-from sync_tests.write_values_to_db import add_test_values_into_db, export_db_tables_to_csv
+from write_values_to_db import add_test_values_into_db, export_db_tables_to_csv
 
 
 # python3 ./sync_tests/sync_test.py -d -t1 << tag_no1 >> -t2 << tag_no2 >> -e << env_type >>
