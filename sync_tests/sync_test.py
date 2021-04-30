@@ -15,6 +15,8 @@ from datetime import datetime
 from pathlib import Path
 
 from psutil import process_iter
+from sync_tests.write_values_to_db import add_test_values_into_db, export_db_tables_to_csv
+
 
 # python3 ./sync_tests/sync_test.py -d -t1 << tag_no1 >> -t2 << tag_no2 >> -e << env_type >>
 # 1. download node files and pre-built files
@@ -32,7 +34,6 @@ from psutil import process_iter
 #     - make all the calcs in python --> export this in order to import it in a separate dashboard in PowerBi --> epoch_no, synced_time_in_secs
 #     - or we can enable "cardano_node_metrics_epoch_int" and collect this from logs at the end of the test
 # grep "new tip" relay.log | sed 's/.*\(2021-04-.* UTC\)].*slot \(.*\)/\1,\2/' gives you a csv file with a timestamp and a slot number that you can plot in what-ever-program.
-from sync_tests.write_values_to_db import add_test_values_into_db, export_db_tables_to_csv
 
 NODE = "./cardano-node"
 CLI = "./cardano-cli"
