@@ -22,7 +22,8 @@ def create_connection(db_file):
 def add_test_values_into_db(table_name, col_names_list, col_values_list):
     print(f"Write values into {table_name} table")
     current_directory = Path.cwd()
-    database_path = Path(current_directory) / "sync_tests" / database_name
+    print(f"current_directory: {current_directory}")
+    database_path = Path(current_directory) / database_name
     print(f"database_path: {database_path}")
 
     col_names = ','.join(col_names_list)
