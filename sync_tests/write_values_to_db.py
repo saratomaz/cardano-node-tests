@@ -19,32 +19,25 @@ def create_connection(db_file):
     return conn
 
 
-def add_test_values_into_db(env, test_values):
-    print(f"Write values into {env} table")
+def add_test_values_into_db(table_name, col_names_list, col_values_list):
+    print(f"Write values into {table_name} table")
     current_directory = Path.cwd()
     database_path = Path(current_directory) / "sync_tests" / database_name
     print(f"database_path: {database_path}")
 
+    col_names = ','.join(col_names_list)
+    col_spaces = ','.join(['?'] * len(col_names_list))
     conn = create_connection(database_path)
-
     try:
-        sql = f' INSERT INTO {env} ' \
-              f'(env, tag_no1, tag_no2, cardano_cli_version1, cardano_cli_version2, ' \
-              f'cardano_cli_git_rev1, cardano_cli_git_rev2, start_sync_time1, end_sync_time1, start_sync_time2, ' \
-              f'end_sync_time2, byron_sync_time_secs1, shelley_sync_time_secs1, allegra_sync_time_seconds1, mary_sync_time_seconds1, ' \
-              f'sync_time_after_restart_seconds, total_chunks1, total_chunks2, latest_block_no1, latest_block_no2, ' \
-              f'latest_slot_no1, latest_slot_no2, start_node_seconds1, start_node_seconds2, platform_system, ' \
-              f'platform_release, platform_version, chain_size, sync_details1) ' \
-              f'VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-
-        print(f"sql: {sql}")
+        sql_query = f"INSERT INTO {table_name} (%s) values(%s)" % (col_names, col_spaces)
+        print(f"sql: {sql_query}")
 
         cur = conn.cursor()
-        cur.execute(sql, test_values)
+        cur.execute(sql_query, col_values_list)
         conn.commit()
         cur.close()
     except sqlite3.Error as error:
-        print(f"!!! ERROR: Failed to insert data into {env} table:\n", error)
+        print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
         return False
     finally:
         if conn:
@@ -52,8 +45,40 @@ def add_test_values_into_db(env, test_values):
     return True
 
 
-def export_db_tables_to_csv(env):
-    print(f"Export {env} table into CSV file")
+# def add_test_values_into_db(table_name, test_values):
+#     print(f"Write values into {table_name} table")
+#     current_directory = Path.cwd()
+#     database_path = Path(current_directory) / "sync_tests" / database_name
+#     print(f"database_path: {database_path}")
+#
+#     conn = create_connection(database_path)
+#     try:
+#         sql_query = f' INSERT INTO {table_name} ' \
+#               f'(env, tag_no1, tag_no2, cardano_cli_version1, cardano_cli_version2, ' \
+#               f'cardano_cli_git_rev1, cardano_cli_git_rev2, start_sync_time1, end_sync_time1, start_sync_time2, ' \
+#               f'end_sync_time2, byron_sync_time_secs1, shelley_sync_time_secs1, allegra_sync_time_seconds1, mary_sync_time_seconds1, ' \
+#               f'sync_time_after_restart_seconds, total_chunks1, total_chunks2, latest_block_no1, latest_block_no2, ' \
+#               f'latest_slot_no1, latest_slot_no2, start_node_seconds1, start_node_seconds2, platform_system, ' \
+#               f'platform_release, platform_version, chain_size, sync_details1) ' \
+#               f'VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+#
+#         print(f"sql: {sql_query}")
+#
+#         cur = conn.cursor()
+#         cur.execute(sql_query, test_values)
+#         conn.commit()
+#         cur.close()
+#     except sqlite3.Error as error:
+#         print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
+#         return False
+#     finally:
+#         if conn:
+#             conn.close()
+#     return True
+
+
+def export_db_tables_to_csv(table_name):
+    print(f"Export {table_name} table into CSV file")
     current_directory = Path.cwd()
     database_path = Path(current_directory) / "sync_tests" / database_name
     csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
@@ -64,27 +89,53 @@ def export_db_tables_to_csv(env):
 
     conn = create_connection(database_path)
     try:
-        sql = f"select * from {env}"
-        print(f"sql: {sql}")
+        sql_query = f"select * from {table_name}"
+        print(f"sql_query: {sql_query}")
 
         cur = conn.cursor()
-        cur.execute(sql)
+        cur.execute(sql_query)
 
-        with open(csv_files_path / f"{env}.csv", "w") as csv_file:
-            df = pd.read_sql(f"select * from {env}", conn)
+        with open(csv_files_path / f"{table_name}.csv", "w") as csv_file:
+            df = pd.read_sql(f"select * from {table_name}", conn)
             df.to_csv(csv_file, escapechar="\n", index=False)
 
         conn.commit()
         cur.close()
 
-        print(f"Data exported Successfully into {csv_files_path / f'{env}.csv'}")
+        print(f"Data exported Successfully into {csv_files_path / f'{table_name}.csv'}")
     except sqlite3.Error as error:
-        print(f"!!! ERROR: Failed to insert data into {env} table:\n", error)
+        print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
         return False
     finally:
         if conn:
             conn.close()
     return True
+
+
+def get_column_names_from_table(table_name):
+    print(f"Getting the column names from {table_name} table")
+    current_directory = Path.cwd()
+
+    # TODO aaa
+    # database_path = Path(current_directory) / "sync_tests" / database_name
+    database_path = Path(current_directory) / database_name
+
+    print(f"database_path: {database_path}")
+    conn = create_connection(database_path)
+    try:
+        sql_query = f"select * from {table_name}"
+        print(f"sql_query: {sql_query}")
+
+        cur = conn.cursor()
+        cur.execute(sql_query)
+        col_name_list = [res[0] for res in cur.description]
+        return col_name_list
+    except sqlite3.Error as error:
+        print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
+        return False
+    finally:
+        if conn:
+            conn.close()
 
 
 def main():

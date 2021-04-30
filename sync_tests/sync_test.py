@@ -32,7 +32,7 @@ from psutil import process_iter
 #     - make all the calcs in python --> export this in order to import it in a separate dashboard in PowerBi --> epoch_no, synced_time_in_secs
 #     - or we can enable "cardano_node_metrics_epoch_int" and collect this from logs at the end of the test
 # grep "new tip" relay.log | sed 's/.*\(2021-04-.* UTC\)].*slot \(.*\)/\1,\2/' gives you a csv file with a timestamp and a slot number that you can plot in what-ever-program.
-
+from sync_tests.write_values_to_db import add_test_values_into_db, export_db_tables_to_csv
 
 NODE = "./cardano-node"
 CLI = "./cardano-cli"
@@ -342,7 +342,7 @@ def get_current_tip(tag_no, wait=False):
             output_json["epoch"] = int(output_json["epoch"])
 
         return output_json["epoch"], int(output_json["block"]), output_json["hash"], \
-               int(output_json["slot"]), output_json["era"]
+               int(output_json["slot"]), output_json["era"].lower()
     except subprocess.CalledProcessError as e:
         if wait:
             return int(e.returncode)
@@ -511,7 +511,6 @@ def get_calculated_slot_no(env):
 def wait_for_node_to_sync(env, tag_no):
     era_details_dict = OrderedDict()
     epoch_details_dict = OrderedDict()
-    count = 0
 
     # TODO: remove below line
     # last_slot_no = get_calculated_slot_no(env)
@@ -521,6 +520,7 @@ def wait_for_node_to_sync(env, tag_no):
 
     start_sync = time.perf_counter()
 
+    count = 0
     while actual_slot <= last_slot_no:
         print(f"actual_era  : {actual_era} "
               f" - actual_epoch: {actual_epoch} "
@@ -533,7 +533,8 @@ def wait_for_node_to_sync(env, tag_no):
                 actual_epoch = 1
             actual_era_start_time = get_epoch_start_datetime(env, actual_epoch)
             current_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            actual_era_dict = {"start_epoch": actual_epoch, "start_time": actual_era_start_time,
+            actual_era_dict = {"start_epoch": actual_epoch,
+                               "start_time": actual_era_start_time,
                                "start_sync_time": current_time}
             era_details_dict[actual_era] = actual_era_dict
         if actual_epoch not in epoch_details_dict:
@@ -563,19 +564,22 @@ def wait_for_node_to_sync(env, tag_no):
     for era in eras_list:
         if era == eras_list[-1]:
             end_sync_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+            last_epoch = actual_epoch
         else:
             end_sync_time = era_details_dict[eras_list[eras_list.index(era) + 1]]["start_sync_time"]
+            last_epoch = int(era_details_dict[eras_list[eras_list.index(era) + 1]]["start_epoch"]) - 1
+
         actual_era_dict = era_details_dict[era]
+        actual_era_dict["last_epoch"] = last_epoch
         actual_era_dict["end_sync_time"] = end_sync_time
-        actual_era_dict["slots_in_era"] = get_no_of_slots_per_era(
-            era,
-            datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"),
-            datetime.strptime(actual_era_dict["end_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
+        actual_era_dict["slots_in_era"] = get_no_of_slots_per_era(env, era)
         actual_era_dict["sync_duration_secs"] = date_diff_in_seconds(
             datetime.strptime(end_sync_time, "%Y-%m-%dT%H:%M:%SZ"),
             datetime.strptime(actual_era_dict["start_sync_time"], "%Y-%m-%dT%H:%M:%SZ"))
+
         actual_era_dict["sync_speed_sps"] = int(
             actual_era_dict["slots_in_era"] / actual_era_dict["sync_duration_secs"])
+
         era_details_dict[era] = actual_era_dict
 
     # calculate and add "end_sync_time" and "sync_duration_secs" for each epoch;
@@ -602,11 +606,15 @@ def date_diff_in_seconds(dt2, dt1):
     return int(timedelta.days * 24 * 3600 + timedelta.seconds)
 
 
-def get_no_of_slots_per_era(era_name, era_start_time, era_end_time):
-    slot_interval = 1
+def get_no_of_slots_per_era(env, era_name):
+    slot_length_secs = 1
+    if env == "shelley_qa":
+        epoch_length_secs = 7200
+    else:
+        epoch_length_secs = 432000
     if era_name.lower() == "byron":
-        slot_interval = 20
-    return int(date_diff_in_seconds(era_end_time, era_start_time) / slot_interval)
+        slot_length_secs = 20
+    return int(epoch_length_secs / slot_length_secs)
 
 
 def main():
@@ -651,9 +659,9 @@ def main():
     print("===================================================================================")
 
     print(" --- node version ---")
-    cardano_cli_version1, cardano_cli_git_rev1 = get_node_version()
-    print(f"  - cardano_cli_version1: {cardano_cli_version1}")
-    print(f"  - cardano_cli_git_rev1: {cardano_cli_git_rev1}")
+    cli_version1, cli_git_rev1 = get_node_version()
+    print(f"  - cardano_cli_version1: {cli_version1}")
+    print(f"  - cardano_cli_git_rev1: {cli_git_rev1}")
 
     print(f"   ======================= Start node using tag_no1: {tag_no1} ====================")
     start_sync_time1 = get_current_date_time()
@@ -663,17 +671,7 @@ def main():
         secs_to_start1 = start_node_windows(env, tag_no1)
 
     print(" - waiting for the node to sync")
-    sync_time_seconds, latest_slot_no, latest_chunk_no, era_details_dict, epoch_details_dict = wait_for_node_to_sync(
-        env, tag_no1)
-
-    print("++++++++++++++++++++++++++++++++++++++++++++++")
-    print(f"eras_start_time_dict: {era_details_dict}")
-    for era in era_details_dict:
-        print(f"{era} --> {era_details_dict[era]}")
-    print("++++++++++++++++++++++++++++++++++++++++++++++")
-    for epoch in epoch_details_dict:
-        print(f"{epoch} --> {epoch_details_dict[epoch]}")
-    print("++++++++++++++++++++++++++++++++++++++++++++++")
+    sync_time_seconds1, last_slot_no1, latest_chunk_no1, era_details_dict1, epoch_details_dict1 = wait_for_node_to_sync(env, tag_no1)
 
     end_sync_time1 = get_current_date_time()
     print(f"secs_to_start1            : {secs_to_start1}")
@@ -690,8 +688,12 @@ def main():
         start_sync_time2,
         end_sync_time2,
         start_sync_time3,
-        sync_time_after_restart_seconds
-    ) = (None, None, None, None, None, None, None, None, None, None)
+        sync_time_after_restart_seconds,
+        cli_version2,
+        cli_git_rev2,
+        last_slot_no2,
+        latest_chunk_no2
+    ) = (None, None, None, None, None, None, None, None, None, None, None, None, None, None)
     if tag_no2 != "None":
         print(f"   =============== Stop node using tag_no1: {tag_no1} ======================")
         stop_node()
@@ -705,9 +707,9 @@ def main():
         get_and_extract_node_files(tag_no2)
 
         print(" --- node version ---")
-        cardano_cli_version2, cardano_cli_git_rev2 = get_node_version()
-        print(f"  - cardano_cli_version2: {cardano_cli_version2}")
-        print(f"  - cardano_cli_git_rev2: {cardano_cli_git_rev2}")
+        cli_version2, cli_git_rev2 = get_node_version()
+        print(f"  - cardano_cli_version2: {cli_version2}")
+        print(f"  - cardano_cli_git_rev2: {cli_git_rev2}")
         print(f"   ================ Start node using tag_no2: {tag_no2} ====================")
         start_sync_time2 = get_current_date_time()
         if "linux" in platform_system.lower() or "darwin" in platform_system.lower():
@@ -715,11 +717,9 @@ def main():
         elif "windows" in platform_system.lower():
             secs_to_start2 = start_node_windows(env, tag_no2)
 
-        start_sync2 = time.perf_counter()
-
         print(f" - waiting for the node to sync - using tag_no2: {tag_no2}")
-        sync_time_seconds2, latest_slot_no2, latest_chunk_no2, era_details_dict2, epoch_details_dict2 = wait_for_node_to_sync(
-            env, tag_no2)
+        sync_time_seconds2, last_slot_no2, latest_chunk_no2, era_details_dict2, epoch_details_dict2 = wait_for_node_to_sync(env, tag_no2)
+        end_sync_time2 = get_current_date_time()
 
     chain_size = get_size(Path(ROOT_TEST_PATH) / "db")
 
@@ -728,45 +728,59 @@ def main():
     current_directory = Path.cwd()
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
 
-    # test_values = (
-    #     env,
-    #     tag_no1,
-    #     tag_no2,
-    #     cardano_cli_version1,
-    #     cardano_cli_version2,
-    #     cardano_cli_git_rev1,
-    #     cardano_cli_git_rev2,
-    #     start_sync_time1,
-    #     end_sync_time1,
-    #     start_sync_time2,
-    #     end_sync_time2,
-    #     byron_sync_time_seconds1,
-    #     shelley_sync_time_seconds1,
-    #     allegra_sync_time_seconds1,
-    #     mary_sync_time_seconds1,
-    #     sync_time_after_restart_seconds,
-    #     total_chunks1,
-    #     total_chunks2,
-    #     latest_block_no1,
-    #     latest_block_no2,
-    #     latest_slot_no1,
-    #     latest_slot_no2,
-    #     secs_to_start1,
-    #     secs_to_start2,
-    #     platform_system,
-    #     platform_release,
-    #     platform_version,
-    #     chain_size,
-    #     json.dumps(sync_details_dict1),
-    # )
+    # Add the test values into the local copy of the database (to be pushed into master)
+    print("Sync test ended; Creating the `test_values_dict` dict with the test values")
 
-    # print(f"test_values: {test_values}")
-    #
-    # with open("sync_results.log", "w+") as file1:
-    #     file1.write(str(test_values))
-    #
-    # current_directory = Path.cwd()
-    # print(f" - sync_tests listdir: {os.listdir(current_directory)}")
+    # TODO: add db/table columns for the new eras /
+    #  check if there are columns for each era, if not create them
+    print("++++++++++++++++++++++++++++++++++++++++++++++")
+    print(f"eras_start_time_dict: {era_details_dict1}")
+    test_values_dict = OrderedDict()
+
+    for era in era_details_dict1:
+        print(f"{era} --> {era_details_dict1[era]}")
+        test_values_dict[str(era + "_start_time")] = era_details_dict1[era]["start_time"]
+        test_values_dict[str(era + "_start_epoch")] = era_details_dict1[era]["start_epoch"]
+        test_values_dict[str(era + "_slots_in_era")] = era_details_dict1[era]["slots_in_era"]
+        test_values_dict[str(era + "_start_sync_time")] = era_details_dict1[era]["start_sync_time"]
+        test_values_dict[str(era + "_end_sync_time")] = era_details_dict1[era]["end_sync_time"]
+        test_values_dict[str(era + "_sync_duration_secs")] = era_details_dict1[era]["sync_duration_secs"]
+        test_values_dict[str(era + "_sync_speed_sps")] = era_details_dict1[era]["sync_speed_sps"]
+
+    print("++++++++++++++++++++++++++++++++++++++++++++++")
+    for epoch in epoch_details_dict1:
+        print(f"{epoch} --> {epoch_details_dict1[epoch]}")
+    print("++++++++++++++++++++++++++++++++++++++++++++++")
+
+    test_values_dict["env"] = env
+    test_values_dict["tag_no1"] = tag_no1
+    test_values_dict["tag_no2"] = tag_no2
+    test_values_dict["cli_version1"] = cli_version1
+    test_values_dict["cli_version2"] = cli_version2
+    test_values_dict["cli_git_rev1"] = cli_git_rev1
+    test_values_dict["cli_git_rev2"] = cli_git_rev2
+    test_values_dict["start_sync_time1"] = start_sync_time1
+    test_values_dict["end_sync_time1"] = end_sync_time1
+    test_values_dict["start_sync_time2"] = start_sync_time2
+    test_values_dict["end_sync_time2"] = end_sync_time2
+    test_values_dict["last_slot_no1"] = last_slot_no1
+    test_values_dict["last_slot_no2"] = last_slot_no2
+    test_values_dict["start_node_secs1"] = secs_to_start1
+    test_values_dict["start_node_secs2"] = secs_to_start2
+    test_values_dict["total_chunks1"] = latest_chunk_no1
+    test_values_dict["total_chunks2"] = latest_chunk_no2
+    test_values_dict["platform_system"] = platform_system
+    test_values_dict["platform_release"] = platform_release
+    test_values_dict["platform_version"] = platform_version
+    test_values_dict["chain_size_bytes"] = chain_size
+    test_values_dict["sync_duration_per_epoch"] = epoch_details_dict1
+
+    col_list = list(test_values_dict.keys())
+    col_values = list(test_values_dict.values())
+    add_test_values_into_db(env, col_list, col_values)
+
+    # Export data into CSV file
+    export_db_tables_to_csv(env)
 
 
 if __name__ == "__main__":
