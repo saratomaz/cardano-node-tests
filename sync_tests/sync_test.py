@@ -15,7 +15,11 @@ from datetime import datetime
 from pathlib import Path
 
 from psutil import process_iter
-from write_values_to_db import add_test_values_into_db
+from write_values_to_db import add_test_values_into_db, get_column_names_from_table, \
+    add_column_to_table
+
+# commit db changes + csv files
+# install pandas
 
 
 # python3 ./sync_tests/sync_test.py -d -t1 << tag_no1 >> -t2 << tag_no2 >> -e << env_type >>
@@ -559,8 +563,8 @@ def wait_for_node_to_sync(env, tag_no):
     os.chdir(Path(ROOT_TEST_PATH))
     print(f"Sync done!; latest_chunk_no: {latest_chunk_no}")
 
-    # calculate and add "end_sync_time", "slots_in_era", "sync_duration_secs" and "sync_speed_sps" for each era;
-    # for the last era, "end_sync_time" = current_utc_time / end_of_sync_time
+    # add "end_sync_time", "slots_in_era", "sync_duration_secs" and "sync_speed_sps" for each era;
+    # for the last/current era, "end_sync_time" = current_utc_time / end_of_sync_time
     eras_list = list(era_details_dict.keys())
     for era in eras_list:
         if era == eras_list[-1]:
@@ -568,7 +572,8 @@ def wait_for_node_to_sync(env, tag_no):
             last_epoch = actual_epoch
         else:
             end_sync_time = era_details_dict[eras_list[eras_list.index(era) + 1]]["start_sync_time"]
-            last_epoch = int(era_details_dict[eras_list[eras_list.index(era) + 1]]["start_epoch"]) - 1
+            last_epoch = int(
+                era_details_dict[eras_list[eras_list.index(era) + 1]]["start_epoch"]) - 1
 
         actual_era_dict = era_details_dict[era]
         actual_era_dict["last_epoch"] = last_epoch
@@ -672,29 +677,18 @@ def main():
         secs_to_start1 = start_node_windows(env, tag_no1)
 
     print(" - waiting for the node to sync")
-    sync_time_seconds1, last_slot_no1, latest_chunk_no1, era_details_dict1, epoch_details_dict1 = wait_for_node_to_sync(env, tag_no1)
+    sync_time_seconds1, last_slot_no1, latest_chunk_no1, era_details_dict1, epoch_details_dict1 = wait_for_node_to_sync(
+        env, tag_no1)
 
     end_sync_time1 = get_current_date_time()
     print(f"secs_to_start1            : {secs_to_start1}")
     print(f"start_sync_time1          : {start_sync_time1}")
     print(f"end_sync_time1            : {end_sync_time1}")
 
-    (
-        cardano_cli_version2,
-        cardano_cli_git_rev2,
-        shelley_sync_time_seconds2,
-        total_chunks2,
-        latest_block_no2,
-        latest_slot_no2,
-        start_sync_time2,
-        end_sync_time2,
-        start_sync_time3,
-        sync_time_after_restart_seconds,
-        cli_version2,
-        cli_git_rev2,
-        last_slot_no2,
-        latest_chunk_no2
-    ) = (None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    (cardano_cli_version2, cardano_cli_git_rev2, shelley_sync_time_seconds2, total_chunks2,
+     latest_block_no2, latest_slot_no2, start_sync_time2, end_sync_time2, start_sync_time3,
+     sync_time_after_restart_seconds, cli_version2, cli_git_rev2, last_slot_no2, latest_chunk_no2
+     ) = (None, None, None, None, None, None, None, None, None, None, None, None, None, None)
     if tag_no2 != "None":
         print(f"   =============== Stop node using tag_no1: {tag_no1} ======================")
         stop_node()
@@ -719,7 +713,8 @@ def main():
             secs_to_start2 = start_node_windows(env, tag_no2)
 
         print(f" - waiting for the node to sync - using tag_no2: {tag_no2}")
-        sync_time_seconds2, last_slot_no2, latest_chunk_no2, era_details_dict2, epoch_details_dict2 = wait_for_node_to_sync(env, tag_no2)
+        sync_time_seconds2, last_slot_no2, latest_chunk_no2, era_details_dict2, epoch_details_dict2 = wait_for_node_to_sync(
+            env, tag_no2)
         end_sync_time2 = get_current_date_time()
 
     chain_size = get_size(Path(ROOT_TEST_PATH) / "db")
@@ -731,8 +726,6 @@ def main():
 
     # Add the test values into the local copy of the database (to be pushed into master)
     print("Node sync test ended; Creating the `test_values_dict` dict with the test values")
-    # TODO: add db/table columns for the new eras /
-    #  check if there are columns for each era, if not create them
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     test_values_dict = OrderedDict()
     epoch_details = OrderedDict()
@@ -775,11 +768,28 @@ def main():
     test_values_dict["chain_size_bytes"] = chain_size
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
 
+    print("Check if there are DB columns for all the eras")
+    eras_in_test = list(era_details_dict1.keys())
+    print(f"eras_in_test: {eras_in_test}")
+    table_column_names = get_column_names_from_table(env)
+    print(f"table_column_names: {table_column_names}")
+    for era in eras_in_test:
+        era_columns = [i for i in table_column_names if i.startswith(era)]
+        if len(era_columns) == 0:
+            print(f" === Adding columns for {era} era into the the {env} table")
+            new_columns_list = [str(era + "_start_time"), str(era + "_start_epoch"),
+                                str(era + "_slots_in_era"), str(era + "_start_sync_time"),
+                                str(era + "_end_sync_time"), str(era + "_sync_duration_secs")]
+            for column_name in new_columns_list:
+                add_column_to_table(env, column_name, "TEXT")
+
+    print(" === Write test values into the DB")
     col_list = list(test_values_dict.keys())
     col_values = list(test_values_dict.values())
     add_test_values_into_db(env, col_list, col_values)
 
     # Export data into CSV file
+    # print(f" === Exporting the {env} table as CSV")
     # export_db_tables_to_csv(env)
 
 
