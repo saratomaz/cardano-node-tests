@@ -737,7 +737,7 @@ def main():
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     print(f"eras_start_time_dict: {era_details_dict1}")
     test_values_dict = OrderedDict()
-
+    epoch_details = OrderedDict()
     for era in era_details_dict1:
         print(f"{era} --> {era_details_dict1[era]}")
         test_values_dict[str(era + "_start_time")] = era_details_dict1[era]["start_time"]
@@ -751,6 +751,7 @@ def main():
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     for epoch in epoch_details_dict1:
         print(f"{epoch} --> {epoch_details_dict1[epoch]}")
+        epoch_details[epoch] = epoch_details_dict1[epoch]["sync_duration_secs"]
     print("++++++++++++++++++++++++++++++++++++++++++++++")
 
     test_values_dict["env"] = env
@@ -774,7 +775,7 @@ def main():
     test_values_dict["platform_release"] = platform_release
     test_values_dict["platform_version"] = platform_version
     test_values_dict["chain_size_bytes"] = chain_size
-    test_values_dict["sync_duration_per_epoch"] = epoch_details_dict1
+    test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
 
     col_list = list(test_values_dict.keys())
     col_values = list(test_values_dict.values())
