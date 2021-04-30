@@ -132,7 +132,34 @@ def get_column_names_from_table(table_name):
         col_name_list = [res[0] for res in cur.description]
         return col_name_list
     except sqlite3.Error as error:
-        print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
+        print(f"!!! ERROR: Failed to get column names from {table_name} table:\n", error)
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+
+def add_column_to_table(table_name, column_name, column_type):
+    print(f"Adding column {column_name} with type {column_type} to {table_name} table")
+    current_directory = Path.cwd()
+
+    # TODO aaa
+    # database_path = Path(current_directory) / "sync_tests" / database_name
+    database_path = Path(current_directory) / database_name
+
+    print(f"database_path: {database_path}")
+    conn = create_connection(database_path)
+
+    try:
+        sql_query = f"alter table {table_name} add column {column_name} {column_type}"
+        print(f"sql_query: {sql_query}")
+
+        cur = conn.cursor()
+        cur.execute(sql_query)
+        col_name_list = [res[0] for res in cur.description]
+        return col_name_list
+    except sqlite3.Error as error:
+        print(f"!!! ERROR: Failed to add {column_name} column into {table_name} table:\n", error)
         return False
     finally:
         if conn:
