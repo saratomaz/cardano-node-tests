@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 from pathlib import Path
 import argparse
-import pandas as pd
+# import pandas as pd
 
 database_name = r"sync_tests_results.db"
 results_file_name = r"sync_results.log"
@@ -77,39 +77,39 @@ def add_test_values_into_db(table_name, col_names_list, col_values_list):
 #     return True
 
 
-def export_db_tables_to_csv(table_name):
-    print(f"Export {table_name} table into CSV file")
-    current_directory = Path.cwd()
-    database_path = Path(current_directory) / "sync_tests" / database_name
-    csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
-    print(f"database_path : {database_path}")
-    print(f"csv_files_path: {csv_files_path}")
-
-    Path(csv_files_path).mkdir(parents=True, exist_ok=True)
-
-    conn = create_connection(database_path)
-    try:
-        sql_query = f"select * from {table_name}"
-        print(f"sql_query: {sql_query}")
-
-        cur = conn.cursor()
-        cur.execute(sql_query)
-
-        with open(csv_files_path / f"{table_name}.csv", "w") as csv_file:
-            df = pd.read_sql(f"select * from {table_name}", conn)
-            df.to_csv(csv_file, escapechar="\n", index=False)
-
-        conn.commit()
-        cur.close()
-
-        print(f"Data exported Successfully into {csv_files_path / f'{table_name}.csv'}")
-    except sqlite3.Error as error:
-        print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
-        return False
-    finally:
-        if conn:
-            conn.close()
-    return True
+# def export_db_tables_to_csv(table_name):
+#     print(f"Export {table_name} table into CSV file")
+#     current_directory = Path.cwd()
+#     database_path = Path(current_directory) / "sync_tests" / database_name
+#     csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
+#     print(f"database_path : {database_path}")
+#     print(f"csv_files_path: {csv_files_path}")
+#
+#     Path(csv_files_path).mkdir(parents=True, exist_ok=True)
+#
+#     conn = create_connection(database_path)
+#     try:
+#         sql_query = f"select * from {table_name}"
+#         print(f"sql_query: {sql_query}")
+#
+#         cur = conn.cursor()
+#         cur.execute(sql_query)
+#
+#         with open(csv_files_path / f"{table_name}.csv", "w") as csv_file:
+#             df = pd.read_sql(f"select * from {table_name}", conn)
+#             df.to_csv(csv_file, escapechar="\n", index=False)
+#
+#         conn.commit()
+#         cur.close()
+#
+#         print(f"Data exported Successfully into {csv_files_path / f'{table_name}.csv'}")
+#     except sqlite3.Error as error:
+#         print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
+#         return False
+#     finally:
+#         if conn:
+#             conn.close()
+#     return True
 
 
 def get_column_names_from_table(table_name):
