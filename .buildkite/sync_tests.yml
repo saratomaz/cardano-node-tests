@@ -9,3 +9,4 @@ steps:
       queue: benchmark
     artifact_paths:
       - 'logfile.log'
+      - 'sync_tests_results.db'
