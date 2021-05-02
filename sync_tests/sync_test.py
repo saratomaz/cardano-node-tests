@@ -16,7 +16,7 @@ from pathlib import Path
 
 from psutil import process_iter
 from write_values_to_db import add_test_values_into_db, get_column_names_from_table, \
-    add_column_to_table
+    add_column_to_table, export_db_table_to_csv
 
 # commit db changes + csv files
 # install pandas
@@ -806,8 +806,8 @@ def main():
     add_test_values_into_db(env, col_list, col_values)
 
     # Export data into CSV file
-    # print(f" === Exporting the {env} table as CSV")
-    # export_db_tables_to_csv(env)
+    print(f" === Exporting the {env} table as CSV")
+    export_db_table_to_csv(env)
 
 
 if __name__ == "__main__":

@@ -78,11 +78,16 @@ def add_test_values_into_db(table_name, col_names_list, col_values_list):
 #     return True
 
 
-def export_db_tables_to_csv(table_name):
+def export_db_table_to_csv(table_name):
     print(f"Export {table_name} table into CSV file")
     current_directory = Path.cwd()
-    database_path = Path(current_directory) / "sync_tests" / database_name
-    csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
+
+    # TODO = make it work for github actions tests
+    # database_path = Path(current_directory) / "sync_tests" / database_name
+    database_path = Path(current_directory) / database_name
+    # csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
+    csv_files_path = Path(current_directory) / "csv_files"
+
     print(f"database_path : {database_path}")
     print(f"csv_files_path: {csv_files_path}")
 
@@ -187,7 +192,7 @@ def main():
     add_test_values_into_db(env, test_values)
 
     # Export data into CSV file
-    export_db_tables_to_csv(env)
+    export_db_table_to_csv(env)
 
 
 if __name__ == "__main__":
