@@ -176,8 +176,8 @@ def get_and_extract_node_files(tag_no):
     commit_sha = git_get_commit_sha_for_tag_no(tag_no)
     eval_url = git_get_hydra_eval_link_for_commit_sha(commit_sha)
 
-    # TO DO - remove below line
-    eval_url = "https://hydra.iohk.io/eval/1044305"
+    # # TODO - remove below line
+    # eval_url = "https://hydra.iohk.io/eval/1044305"
 
     print(f"commit_sha  : {commit_sha}")
     print(f"eval_url    : {eval_url}")
@@ -194,10 +194,8 @@ def get_and_extract_node_files(tag_no):
 
 
 def get_and_extract_linux_files(download_url):
-    # os.chdir(Path(CARDANO_NODE_TESTS_PATH))
     current_directory = os.getcwd()
     print(f" - current_directory: {current_directory}")
-
     archive_name = download_url.split("/")[-1].strip()
 
     print(f"archive_name: {archive_name}")
@@ -280,6 +278,22 @@ def get_node_config_files(env):
         + "-topology.json",
         env + "-topology.json",
     )
+
+
+# def enable_cardano_node_resources_monitoring(node_config_filepah):
+#     try:
+#         cmd = "sed -i" + node_config_filepah + "-e 's/"slotLength": 1/"slotLength": 0.2/'"
+#         output = (
+#             subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+#                 .decode("utf-8")
+#                 .strip()
+#         )
+#     except subprocess.CalledProcessError as e:
+#         raise RuntimeError(
+#             "command '{}' return with error (code {}): {}".format(
+#                 e.cmd, e.returncode, " ".join(str(e.output).split())
+#             )
+#         )
 
 
 def set_node_socket_path_env_var():
@@ -654,6 +668,9 @@ def main():
     print(f"Get node config files time: {get_node_config_files_time}")
     print("get the node config files")
     get_node_config_files(env)
+
+    # print("Enable 'cardano node resource' monitoring")
+    # enable_cardano_node_resources_monitoring(node_config_filepah)
 
     get_node_build_files_time = get_current_date_time()
     print(f"Get node build files time:  {get_node_build_files_time}")
