@@ -805,7 +805,6 @@ def main():
     col_values = list(test_values_dict.values())
     add_test_values_into_db(env, col_list, col_values)
 
-
     # Export data into CSV file
     print(f" === Exporting the {env} table as CSV")
     export_db_table_to_csv(env)
