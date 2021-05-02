@@ -176,8 +176,8 @@ def get_and_extract_node_files(tag_no):
     commit_sha = git_get_commit_sha_for_tag_no(tag_no)
     eval_url = git_get_hydra_eval_link_for_commit_sha(commit_sha)
 
-    # # TODO - remove below line
-    # eval_url = "https://hydra.iohk.io/eval/1044305"
+    # TODO - remove below line starting with 1.27.0 (tip returning era)
+    eval_url = "https://hydra.iohk.io/eval/1044305"
 
     print(f"commit_sha  : {commit_sha}")
     print(f"eval_url    : {eval_url}")
@@ -532,8 +532,8 @@ def wait_for_node_to_sync(env, tag_no):
     epoch_details_dict = OrderedDict()
 
     # TODO: remove below line
-    last_slot_no = get_calculated_slot_no(env)
-    # last_slot_no = 80000
+    # last_slot_no = get_calculated_slot_no(env)
+    last_slot_no = 80000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
