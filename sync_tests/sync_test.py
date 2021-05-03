@@ -1,7 +1,11 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -i python
+
 import argparse
 import json
 import os
 import platform
+import re
 import signal
 import subprocess
 import tarfile
@@ -18,35 +22,19 @@ from psutil import process_iter
 from write_values_to_db import add_test_values_into_db, get_column_names_from_table, \
     add_column_to_table, export_db_table_to_csv
 
-# commit db changes + csv files
-# install pandas
-
 
 # python3 ./sync_tests/sync_test.py -d -t1 << tag_no1 >> -t2 << tag_no2 >> -e << env_type >>
-# 1. download node files and pre-built files
-# - enable metrics for RAM and CPU
-# 2. start node and wait to sync - DONE
-# 3. calculate time to sync per era - DONE
-# 4. calculate slots per era --> these 2 will let us calculate sync speed in sps - DONE
-# 5. other calcs - db size, etc - DONE
-# 6. save log results like
-# - [producer:cardano.node.LeadershipCheck:Info:415] [2021-04-27 14:26:55.00 UTC] {"kind":"TraceStartLeadershipCheck","chainDensity":5.066529e-2,"slot":27967324,"delegMapSize":468179,"utxoSize":2028880,"credentials":"Cardano"}
-#     - save: delegMapSize, utxoSize + timestamp
-# - collect RAM and CPU metrics from logs + timestamps
-# - collect the tip + timestamp from log lines containing "Chain extended"
-#     - create visuals displaying how much time it took for each epoch to be synced from clean state
-#     - make all the calcs in python --> export this in order to import it in a separate dashboard in PowerBi --> epoch_no, synced_time_in_secs
-#     - or we can enable "cardano_node_metrics_epoch_int" and collect this from logs at the end of the test
-# grep "new tip" relay.log | sed 's/.*\(2021-04-.* UTC\)].*slot \(.*\)/\1,\2/' gives you a csv file with a timestamp and a slot number that you can plot in what-ever-program.
+
 
 NODE = "./cardano-node"
 CLI = "./cardano-cli"
 ROOT_TEST_PATH = ""
+NODE_LOG_FILE = "logfile.log"
 
 MAINNET_EXPLORER_URL = "https://explorer.cardano.org/graphql"
 STAGING_EXPLORER_URL = "https://explorer.staging.cardano.org/graphql"
 TESTNET_EXPLORER_URL = "https://explorer.cardano-testnet.iohkdev.io/graphql"
-SHELEY_QA_EXPLORER_URL = "https://explorer.shelley-qa.dev.cardano.org/graphql"
+SHELLEY_QA_EXPLORER_URL = "https://explorer.shelley-qa.dev.cardano.org/graphql"
 
 
 def set_repo_paths():
@@ -75,7 +63,7 @@ def get_epoch_start_datetime(env, epoch_no):
         url = TESTNET_EXPLORER_URL
         res = requests.post(url, data=payload, headers=headers)
     elif env == "shelley_qa":
-        url = SHELEY_QA_EXPLORER_URL
+        url = SHELLEY_QA_EXPLORER_URL
         res = requests.post(url, data=payload, headers=headers)
     else:
         print(f"ERROR: the provided 'env' is not supported. Please use one of: shelley_qa, "
@@ -280,20 +268,11 @@ def get_node_config_files(env):
     )
 
 
-# def enable_cardano_node_resources_monitoring(node_config_filepah):
-#     try:
-#         cmd = "sed -i" + node_config_filepah + "-e 's/"slotLength": 1/"slotLength": 0.2/'"
-#         output = (
-#             subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-#                 .decode("utf-8")
-#                 .strip()
-#         )
-#     except subprocess.CalledProcessError as e:
-#         raise RuntimeError(
-#             "command '{}' return with error (code {}): {}".format(
-#                 e.cmd, e.returncode, " ".join(str(e.output).split())
-#             )
-#         )
+def enable_cardano_node_resources_monitoring(node_config_filepah):
+    with open(node_config_filepah) as json_file:
+        node_config_json = json.load(json_file)
+
+    node_config_json["options"]["mapBackends"]["cardano.node.resources"] = ["KatipBK"]
 
 
 def set_node_socket_path_env_var():
@@ -402,7 +381,7 @@ def start_node_windows(env, tag_no):
         "-topology.json --database-path db --port 3000 --config " + \
         env + \
         "-config.json --socket-path \\\\.\pipe\cardano-node "
-    logfile = open("logfile.log", "w+")
+    logfile = open(NODE_LOG_FILE, "w+")
     print(f"cmd: {cmd}")
 
     try:
@@ -439,7 +418,7 @@ def start_node_unix(env, tag_no):
         f"{env}-config.json --socket-path ./db/node.socket"
     )
 
-    logfile = open("logfile.log", "w+")
+    logfile = open(NODE_LOG_FILE, "w+")
     print(f"cmd: {cmd}")
 
     try:
@@ -637,6 +616,29 @@ def get_no_of_slots_per_era(env, era_name):
     return int(epoch_length_secs / slot_length_secs)
 
 
+def get_data_from_logs(log_file):
+    tip_details_dict = OrderedDict()
+    ram_details_dict = OrderedDict()
+    cpu_details_dict = OrderedDict()
+
+    with open(log_file) as f:
+        log_file_lines = [line.rstrip() for line in f]
+
+    for line in log_file_lines:
+        if "cardano.node.resources" in line:
+            timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
+            ram_value = re.findall(r'"Heap",Number [-+]?[\d]+\.?[\d]*[Ee](?:[-+]?[\d]+)?', line)[0]
+            ram_details_dict[timestamp] = ram_value.split(' ')[1]
+            cpu_value = re.findall(r'"CentiCpu",Number \d+\.\d+', line)[0]
+            cpu_details_dict[timestamp] = cpu_value.split(' ')[1]
+        if "new tip" in line:
+            timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
+            slot_no = line.split(" at slot ")[1]
+            tip_details_dict[timestamp] = slot_no
+
+    return tip_details_dict, ram_details_dict, cpu_details_dict
+
+
 def main():
     start_test_time = get_current_date_time()
     print(f"Start test time:            {start_test_time}")
@@ -669,8 +671,8 @@ def main():
     print("get the node config files")
     get_node_config_files(env)
 
-    # print("Enable 'cardano node resource' monitoring")
-    # enable_cardano_node_resources_monitoring(node_config_filepah)
+    print("Enable 'cardano node resource' monitoring")
+    enable_cardano_node_resources_monitoring(env + "-config.json")
 
     get_node_build_files_time = get_current_date_time()
     print(f"Get node build files time:  {get_node_build_files_time}")
@@ -736,12 +738,12 @@ def main():
 
     chain_size = get_size(Path(ROOT_TEST_PATH) / "db")
 
-    print("******* move to 'cardano_node_tests_path/scripts'")
+    print("******* move to 'sync_tests' directory")
     os.chdir(Path(ROOT_TEST_PATH) / "sync_tests")
     current_directory = Path.cwd()
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
 
-    # Add the test values into the local copy of the database (to be pushed into master)
+    # Add the test values into the local copy of the database (to be pushed into sync tests repo)
     print("Node sync test ended; Creating the `test_values_dict` dict with the test values")
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     test_values_dict = OrderedDict()
@@ -753,7 +755,8 @@ def main():
         test_values_dict[str(era + "_slots_in_era")] = era_details_dict1[era]["slots_in_era"]
         test_values_dict[str(era + "_start_sync_time")] = era_details_dict1[era]["start_sync_time"]
         test_values_dict[str(era + "_end_sync_time")] = era_details_dict1[era]["end_sync_time"]
-        test_values_dict[str(era + "_sync_duration_secs")] = era_details_dict1[era]["sync_duration_secs"]
+        test_values_dict[str(era + "_sync_duration_secs")] = era_details_dict1[era][
+            "sync_duration_secs"]
         test_values_dict[str(era + "_sync_speed_sps")] = era_details_dict1[era]["sync_speed_sps"]
 
     print("++++++++++++++++++++++++++++++++++++++++++++++")
@@ -800,6 +803,13 @@ def main():
             for column_name in new_columns_list:
                 add_column_to_table(env, column_name, "TEXT")
 
+    print(" === Parse the node logs and get the relevant data")
+    tip_details_dict, ram_details_dict, cpu_details_dict = get_data_from_logs(NODE_LOG_FILE)
+    test_values_dict["tip_logs"] = json.dumps(tip_details_dict)
+    test_values_dict["ram_logs"] = json.dumps(ram_details_dict)
+    test_values_dict["cpu_logs"] = json.dumps(cpu_details_dict)
+
+    print("++++++++++++++++++++++++++++++++++++++++++++++")
     print(" === Write test values into the DB")
     col_list = list(test_values_dict.keys())
     col_values = list(test_values_dict.values())
