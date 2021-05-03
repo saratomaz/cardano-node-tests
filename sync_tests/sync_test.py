@@ -406,8 +406,9 @@ def start_node_windows(env, tag_no):
 
 
 def start_node_unix(env, tag_no):
+    os.chdir(Path(ROOT_TEST_PATH))
     current_directory = Path.cwd()
-
+    print(f"current_directory: {current_directory}")
     cmd = (
         f"{NODE} run --topology {env}-topology.json --database-path "
         f"{Path(ROOT_TEST_PATH) / 'db'} "
@@ -614,6 +615,10 @@ def get_no_of_slots_per_era(env, era_name):
 
 
 def get_data_from_logs(log_file):
+    os.chdir(Path(ROOT_TEST_PATH))
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+
     tip_details_dict = OrderedDict()
     ram_details_dict = OrderedDict()
     cpu_details_dict = OrderedDict()
@@ -735,16 +740,17 @@ def main():
 
     chain_size = get_size(Path(ROOT_TEST_PATH) / "db")
 
-    print("******* move to 'sync_tests' directory")
-    os.chdir(Path(ROOT_TEST_PATH) / "sync_tests")
-    current_directory = Path.cwd()
-    print(f" - sync_tests listdir: {os.listdir(current_directory)}")
+    test_values_dict = OrderedDict()
+    print(" === Parse the node logs and get the relevant data")
+    tip_details_dict, ram_details_dict, cpu_details_dict = get_data_from_logs(NODE_LOG_FILE)
+    test_values_dict["tip_logs"] = json.dumps(tip_details_dict)
+    test_values_dict["ram_logs"] = json.dumps(ram_details_dict)
+    test_values_dict["cpu_logs"] = json.dumps(cpu_details_dict)
 
     # Add the test values into the local copy of the database (to be pushed into sync tests repo)
     print("Node sync test ended; Creating the `test_values_dict` dict with the test values")
     print("++++++++++++++++++++++++++++++++++++++++++++++")
-    test_values_dict = OrderedDict()
-    epoch_details = OrderedDict()
+
     for era in era_details_dict1:
         print(f"  *** {era} --> {era_details_dict1[era]}")
         test_values_dict[str(era + "_start_time")] = era_details_dict1[era]["start_time"]
@@ -757,6 +763,7 @@ def main():
         test_values_dict[str(era + "_sync_speed_sps")] = era_details_dict1[era]["sync_speed_sps"]
 
     print("++++++++++++++++++++++++++++++++++++++++++++++")
+    epoch_details = OrderedDict()
     for epoch in epoch_details_dict1:
         print(f"{epoch} --> {epoch_details_dict1[epoch]}")
         epoch_details[epoch] = epoch_details_dict1[epoch]["sync_duration_secs"]
@@ -785,6 +792,12 @@ def main():
     test_values_dict["chain_size_bytes"] = chain_size
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
 
+    print("******* move to 'sync_tests' directory")
+    os.chdir(Path(ROOT_TEST_PATH) / "sync_tests")
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+    print(f" - sync_tests listdir: {os.listdir(current_directory)}")
+
     print("Check if there are DB columns for all the eras")
     eras_in_test = list(era_details_dict1.keys())
     print(f"eras_in_test: {eras_in_test}")
@@ -799,12 +812,6 @@ def main():
                                 str(era + "_end_sync_time"), str(era + "_sync_duration_secs")]
             for column_name in new_columns_list:
                 add_column_to_table(env, column_name, "TEXT")
-
-    print(" === Parse the node logs and get the relevant data")
-    tip_details_dict, ram_details_dict, cpu_details_dict = get_data_from_logs(NODE_LOG_FILE)
-    test_values_dict["tip_logs"] = json.dumps(tip_details_dict)
-    test_values_dict["ram_logs"] = json.dumps(ram_details_dict)
-    test_values_dict["cpu_logs"] = json.dumps(cpu_details_dict)
 
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     print(" === Write test values into the DB")
