@@ -1,5 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash
+#!/usr/bin/env bash
 
 : "${sshkey:=/run/keys/buildkite-ssh-iohk-devops-private}"
 echo "Authenticating push using SSH with $sshkey"
