@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-git config --global user.name "sync_tests"
-git config --global user.email "action@github.com"
+#git config --global user.name "sync_tests"
+#git config --global user.email "action@github.com"
 
 git config pull.rebase true
 git pull origin master
