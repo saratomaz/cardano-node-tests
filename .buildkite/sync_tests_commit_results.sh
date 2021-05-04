@@ -5,8 +5,7 @@ echo "Authenticating push using SSH with $sshkey"
 export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
 remote="git@github.com:input-output-hk/cardano-node-tests.git"
 
-git remote remove origin
-git remote set-url origin git@github.com:input-output-hk/cardano-node-tests.git
+git remote add upstream git@github.com:input-output-hk/cardano-node-tests.git
 
 echo "pwd: $PWD"
 git remote -v
@@ -19,4 +18,4 @@ git add sync_tests/sync_tests_results.db
 git add sync_tests/csv_files
 
 git commit -m "added sync test values"
-git push origin HEAD:dorin/sync_test1 --force
+git push upstream HEAD:dorin/sync_test1 --force
