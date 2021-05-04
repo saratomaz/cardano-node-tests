@@ -265,13 +265,14 @@ def get_node_config_files(env):
     )
 
 
-def enable_cardano_node_resources_monitoring(node_config_filepah):
-    with open(node_config_filepah) as json_file:
+def enable_cardano_node_resources_monitoring(node_config_filepath):
+    with open(node_config_filepath, "r") as json_file:
         node_config_json = json.load(json_file)
 
     node_config_json["options"]["mapBackends"]["cardano.node.resources"] = ["KatipBK"]
 
-    print(f'cardano.node.resources: {node_config_json["options"]["mapBackends"]["cardano.node.resources"]}')
+    with open(node_config_filepath, "w") as json_file:
+        json.dump(node_config_json, json_file)
 
 
 def set_node_socket_path_env_var():
@@ -511,8 +512,8 @@ def wait_for_node_to_sync(env, tag_no):
     epoch_details_dict = OrderedDict()
 
     # TODO: remove below line
-    last_slot_no = get_calculated_slot_no(env)
-    # last_slot_no = 80000
+    # last_slot_no = get_calculated_slot_no(env)
+    last_slot_no = 80000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
