@@ -15,5 +15,4 @@ git add sync_tests/sync_tests_results.db
 git add sync_tests/csv_files
 
 git commit -m "added sync test values"
-#git push origin HEAD:dorin/sync_test1 --force
-git push
+git push origin HEAD:dorin/sync_test1 --force
