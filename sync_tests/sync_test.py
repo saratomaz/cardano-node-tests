@@ -272,7 +272,7 @@ def enable_cardano_node_resources_monitoring(node_config_filepath):
     node_config_json["options"]["mapBackends"]["cardano.node.resources"] = ["KatipBK"]
 
     with open(node_config_filepath, "w") as json_file:
-        json.dump(node_config_json, json_file, indent=4)
+        json.dump(node_config_json, json_file, indent=2)
 
 
 def set_node_socket_path_env_var():
