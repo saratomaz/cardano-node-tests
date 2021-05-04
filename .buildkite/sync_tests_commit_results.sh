@@ -5,9 +5,11 @@
 #export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
 #remote="git@github.com:input-output-hk/cardano-node-tests.git"
 
+echo "pwd: $PWD"
+
 git config --global user.name "sync_tests"
 git config --global user.email "action@github.com"
-git remote set-url origin git@github.com/sync_tests/repo.git
+git remote add origin https://github.com/input-output-hk/cardano-node-tests.git
 
 echo "000000000000000000000000"
 git fetch origin
