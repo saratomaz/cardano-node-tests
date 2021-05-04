@@ -9,7 +9,7 @@ echo "pwd: $PWD"
 
 git config --global user.name "sync_tests"
 git config --global user.email "action@github.com"
-git remote add origin https://github.com/input-output-hk/cardano-node-tests.git
+#git remote add origin https://github.com/input-output-hk/cardano-node-tests.git
 
 echo "000000000000000000000000"
 git fetch origin
@@ -28,5 +28,5 @@ git commit -m "added sync test values"
 echo "55555555555555555555"
 
 #git push origin dorin/sync_test1
-git push origin HEAD
+git push origin HEAD --force
 echo "66666666666666666666666"
