@@ -8,29 +8,12 @@ remote="git@github.com:input-output-hk/cardano-node-tests.git"
 echo "pwd: $PWD"
 echo "aaa: $(ls -l)"
 
-#git config --global user.name "sync_tests"
-#git config --global user.email "action@github.com"
-##git remote add origin https://github.com/input-output-hk/cardano-node-tests.git
-#git remote set-url origin https://github.com/input-output-hk/cardano-node-tests.git
-git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
-
-echo "000000000000000000000000"
 git fetch origin
-echo "111111111111111111"
 git merge origin/dorin/sync_test1
-echo "3333333333333333333"
 
 git add sync_tests/sync_tests_results.db
 git add sync_tests/csv_files
-echo "444444444444444444444"
-
-git show-ref
-echo "22222222222222222222"
 
 git commit -m "added sync test values"
-echo "55555555555555555555"
-
-#git push origin dorin/sync_test1 --force
-git push origin HEAD:dorin/sync_test1
-#git push origin HEAD --force
-echo "66666666666666666666666"
+#git push origin HEAD:dorin/sync_test1 --force
+git push
