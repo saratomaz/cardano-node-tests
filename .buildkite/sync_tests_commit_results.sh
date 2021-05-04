@@ -6,6 +6,7 @@
 #remote="git@github.com:input-output-hk/cardano-node-tests.git"
 
 echo "pwd: $PWD"
+echo "aaa: $(ls -l)"
 
 git config --global user.name "sync_tests"
 git config --global user.email "action@github.com"
@@ -27,6 +28,6 @@ echo "444444444444444444444"
 git commit -m "added sync test values"
 echo "55555555555555555555"
 
-#git push origin dorin/sync_test1
-git push origin HEAD --force
+git push origin dorin/sync_test1
+#git push origin HEAD --force
 echo "66666666666666666666666"
