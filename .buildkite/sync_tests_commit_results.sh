@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+
+print("----------------")
+git remote -v
+print("----------------")
+
 git remote set-url origin git@github.com:input-output-hk/cardano-node-tests.git
 
 : "${sshkey:=/run/keys/buildkite-ssh-iohk-devops-private}"
