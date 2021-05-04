@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+git remote add origin git@github.com:input-output-hk/cardano-node-tests.git
 
-print("----------------")
+
+echo "----------------"
 git remote -v
-print("----------------")
+echo "----------------"
+
 
 git remote set-url origin git@github.com:input-output-hk/cardano-node-tests.git
 
