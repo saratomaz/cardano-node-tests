@@ -11,3 +11,4 @@ steps:
     artifact_paths:
       - 'logfile.log'
       - 'sync_tests/sync_tests_results.db'
+      - 'shelley_qa-config.json'
