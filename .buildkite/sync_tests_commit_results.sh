@@ -1,17 +1,9 @@
 #!/usr/bin/env bash
 
-echo "----------------"
-git remote -v
-echo "----------------"
-
 : "${sshkey:=/run/keys/buildkite-ssh-iohk-devops-private}"
 echo "Authenticating push using SSH with $sshkey"
 export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
 remote="git@github.com:input-output-hk/cardano-node-tests.git"
-
-echo "pwd: $PWD"
-git remote -v
-echo "aaa: $(ls -l)"
 
 git fetch origin
 git merge origin/dorin/sync_test1
@@ -19,5 +11,5 @@ git merge origin/dorin/sync_test1
 git add sync_tests/sync_tests_results.db
 git add sync_tests/csv_files
 
-git commit -m "added sync test values"
+git commit -m "added mainnet sync test values"
 git push origin HEAD:dorin/sync_test1 --force
