@@ -14,12 +14,12 @@ echo "3333333333333333333"
 git add sync_tests/sync_tests_results.db
 git add sync_tests/csv_files
 echo "444444444444444444444"
-
-git whatchanged --diff-filter=A
-echo "22222222222222222222"
+#
+#git whatchanged --diff-filter=A
+#echo "22222222222222222222"
 
 git commit -m "added sync test values"
 echo "55555555555555555555"
 
-git push origin master
+git push origin
 echo "66666666666666666666666"
