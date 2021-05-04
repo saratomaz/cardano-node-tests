@@ -272,7 +272,7 @@ def enable_cardano_node_resources_monitoring(node_config_filepath):
     node_config_json["options"]["mapBackends"]["cardano.node.resources"] = ["KatipBK"]
 
     with open(node_config_filepath, "w") as json_file:
-        json.dump(node_config_json, json_file)
+        json.dump(node_config_json, json_file, indent=4)
 
 
 def set_node_socket_path_env_var():
@@ -632,10 +632,13 @@ def get_data_from_logs(log_file):
     for line in log_file_lines:
         if "cardano.node.resources" in line:
             timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
-            ram_value = re.findall(r'"Heap",Number [-+]?[\d]+\.?[\d]*[Ee](?:[-+]?[\d]+)?', line)[0]
-            ram_details_dict[timestamp] = ram_value.split(' ')[1]
-            cpu_value = re.findall(r'"CentiCpu",Number \d+\.\d+', line)[0]
-            cpu_details_dict[timestamp] = cpu_value.split(' ')[1]
+            ram_value = re.findall(r'"Heap",Number [-+]?[\d]+\.?[\d]*[Ee](?:[-+]?[\d]+)?', line)
+            if len(ram_value) > 0:
+                ram_details_dict[timestamp] = ram_value[0].split(' ')[1]
+
+            cpu_value = re.findall(r'"CentiCpu",Number \d+\.\d+', line)
+            if len(cpu_value) > 0:
+                cpu_details_dict[timestamp] = cpu_value[0].split(' ')[1]
         if "new tip" in line:
             timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
             slot_no = line.split(" at slot ")[1]
