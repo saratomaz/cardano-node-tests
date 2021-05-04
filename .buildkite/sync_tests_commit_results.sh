@@ -5,6 +5,9 @@ echo "Authenticating push using SSH with $sshkey"
 export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
 remote="git@github.com:input-output-hk/cardano-node-tests.git"
 
+git remote remove origin
+git remote set-url origin git@github.com:input-output-hk/cardano-node-tests.git
+
 echo "pwd: $PWD"
 git remote -v
 echo "aaa: $(ls -l)"

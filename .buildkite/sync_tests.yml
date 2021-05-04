@@ -1,7 +1,7 @@
 steps:
   - label: 'run the cardano node sync test on Mainnet using a Linux machine'
     command:
-#      - nix-shell --run 'python ./sync_tests/sync_test.py -t1 "1.26.2" -e "shelley_qa"'
+      - nix-shell --run 'python ./sync_tests/sync_test.py -t1 "1.26.2" -e "shelley_qa"'
       - './.buildkite/sync_tests_commit_results.sh'
     branches: "dorin/*"
     timeout_in_minutes: 1200
