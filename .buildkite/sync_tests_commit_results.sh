@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
+git remote set-url origin git@github.com:input-output-hk/cardano-node-tests.git
+
 : "${sshkey:=/run/keys/buildkite-ssh-iohk-devops-private}"
 echo "Authenticating push using SSH with $sshkey"
 export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
 remote="git@github.com:input-output-hk/cardano-node-tests.git"
-
-git remote add upstream git@github.com:input-output-hk/cardano-node-tests.git
 
 echo "pwd: $PWD"
 git remote -v
