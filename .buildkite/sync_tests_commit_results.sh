@@ -6,6 +6,7 @@ export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
 remote="git@github.com:input-output-hk/cardano-node-tests.git"
 
 echo "pwd: $PWD"
+git remote -v
 echo "aaa: $(ls -l)"
 
 git fetch origin
