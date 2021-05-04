@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
-#: "${sshkey:=/run/keys/buildkite-ssh-iohk-devops-private}"
-#echo "Authenticating push using SSH with $sshkey"
-#export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
-#remote="git@github.com:input-output-hk/cardano-node-tests.git"
+: "${sshkey:=/run/keys/buildkite-ssh-iohk-devops-private}"
+echo "Authenticating push using SSH with $sshkey"
+export GIT_SSH_COMMAND="ssh -i $sshkey -F /dev/null"
+remote="git@github.com:input-output-hk/cardano-node-tests.git"
 
 echo "pwd: $PWD"
 echo "aaa: $(ls -l)"
 
-git config --global user.name "sync_tests"
-git config --global user.email "action@github.com"
-#git remote add origin https://github.com/input-output-hk/cardano-node-tests.git
-git remote set-url origin https://github.com/input-output-hk/cardano-node-tests.git
-git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
+#git config --global user.name "sync_tests"
+#git config --global user.email "action@github.com"
+##git remote add origin https://github.com/input-output-hk/cardano-node-tests.git
+#git remote set-url origin https://github.com/input-output-hk/cardano-node-tests.git
+#git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
 
 echo "000000000000000000000000"
 git fetch origin
