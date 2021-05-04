@@ -7,6 +7,7 @@
 
 git config --global user.name "sync_tests"
 git config --global user.email "action@github.com"
+git remote set-url origin git@github.com/sync_tests/repo.git
 
 echo "000000000000000000000000"
 git fetch origin
