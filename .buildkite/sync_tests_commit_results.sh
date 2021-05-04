@@ -24,5 +24,5 @@ echo "444444444444444444444"
 git commit -m "added sync test values"
 echo "55555555555555555555"
 
-git push -u origin dorin/sync_tests1
+git push -u origin HEAD
 echo "66666666666666666666666"
