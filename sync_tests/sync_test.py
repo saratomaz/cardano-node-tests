@@ -835,6 +835,12 @@ def main():
     print(f" === Exporting the {env} table as CSV")
     export_db_table_to_csv(env)
 
+    print("******* move to 'root' directory")
+    os.chdir(Path(ROOT_TEST_PATH))
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+    print(f" - current_directory listdir: {os.listdir(current_directory)}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Execute basic sync test\n\n")
