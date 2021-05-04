@@ -11,6 +11,8 @@ echo "aaa: $(ls -l)"
 git config --global user.name "sync_tests"
 git config --global user.email "action@github.com"
 #git remote add origin https://github.com/input-output-hk/cardano-node-tests.git
+git remote set-url origin https://github.com/input-output-hk/cardano-node-tests.git
+git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
 
 echo "000000000000000000000000"
 git fetch origin
