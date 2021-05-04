@@ -8,7 +8,7 @@ remote="git@github.com:input-output-hk/cardano-node-tests.git"
 git config pull.rebase true
 git pull origin master
 
-git add sync_tests/sync_results.db
+git add sync_tests/sync_tests_results.db
 git add sync_tests/csv_files
-git commit -m "added sync values for"
+git commit -m "added sync test values"
 git push origin master

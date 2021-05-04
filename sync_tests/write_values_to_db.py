@@ -171,36 +171,36 @@ def add_column_to_table(table_name, column_name, column_type):
             conn.close()
 
 
-def main():
-    env = vars(args)["environment"]
-
-    current_directory = Path.cwd()
-    print(f"current_directory: {current_directory}")
-
-    # sync_test_clean_state.py is creating the "sync_results.log" file that has the test values
-    # to be added into the db
-    with open(current_directory / "sync_tests" / results_file_name, "r+") as file:
-        file_values = file.read()
-        print(f"file_values: {file_values}")
-
-        test_values = file_values.replace("(", "").replace(")", "").replace("'", "").split(", ", 28)
-
-    print(f"env: {env}")
-    print(f"test_values: {test_values}")
-
-    # Add the test values into the local copy of the database (to be pushed into master)
-    add_test_values_into_db(env, test_values)
-
-    # Export data into CSV file
-    export_db_table_to_csv(env)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Add sync test values into database\n\n")
-
-    parser.add_argument("-e", "--environment",
-                        help="The environment on which to run the tests - shelley_qa, testnet, staging or mainnet.")
-
-    args = parser.parse_args()
-
-    main()
+# def main():
+#     env = vars(args)["environment"]
+#
+#     current_directory = Path.cwd()
+#     print(f"current_directory: {current_directory}")
+#
+#     # sync_test_clean_state.py is creating the "sync_results.log" file that has the test values
+#     # to be added into the db
+#     with open(current_directory / "sync_tests" / results_file_name, "r+") as file:
+#         file_values = file.read()
+#         print(f"file_values: {file_values}")
+#
+#         test_values = file_values.replace("(", "").replace(")", "").replace("'", "").split(", ", 28)
+#
+#     print(f"env: {env}")
+#     print(f"test_values: {test_values}")
+#
+#     # Add the test values into the local copy of the database (to be pushed into master)
+#     add_test_values_into_db(env, test_values)
+#
+#     # Export data into CSV file
+#     export_db_table_to_csv(env)
+#
+#
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser(description="Add sync test values into database\n\n")
+#
+#     parser.add_argument("-e", "--environment",
+#                         help="The environment on which to run the tests - shelley_qa, testnet, staging or mainnet.")
+#
+#     args = parser.parse_args()
+#
+#     main()
