@@ -15,7 +15,7 @@ git add sync_tests/sync_tests_results.db
 git add sync_tests/csv_files
 echo "444444444444444444444"
 
-git diff --diff-filter=A --name-only HEAD
+git whatchanged --diff-filter=A
 echo "22222222222222222222"
 
 git commit -m "added sync test values"
