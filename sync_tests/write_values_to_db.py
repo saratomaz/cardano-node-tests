@@ -167,7 +167,8 @@ def main():
     if env == "mainnet":
         os.chdir(current_directory / "sync_tests")
     else:
-        os.chdir(current_directory / "cardano_node_tests" / "sync_tests")
+        # os.chdir(current_directory / "cardano_node_tests" / "sync_tests")
+        os.chdir(current_directory / "sync_tests")
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
@@ -175,7 +176,7 @@ def main():
     print("  ==== Check if there are DB columns for all the eras")
 
     print(f"Get the list of the existing eras in test")
-    eras_in_test = sync_test_results_dict["eras_in_test"]
+    eras_in_test = sync_test_results_dict["eras_in_test"].replace("[", "").replace("]", "").replace('"', '').split(",").strip()
     print(f"eras_in_test: {eras_in_test}")
 
     print(f"Get the column names inside the DB tables")
