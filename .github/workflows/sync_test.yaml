@@ -44,7 +44,7 @@ jobs:
           git config --global user.name "sync_tests"
           git config --global user.email "action@github.com"
 
-          git checkput dorin/sync_test1
+          git checkout dorin/sync_test1
 
           echo "current branch1: $(git branch --show-current)"
       - name: run sync test
