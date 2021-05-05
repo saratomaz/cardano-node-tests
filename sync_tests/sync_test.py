@@ -19,7 +19,6 @@ from psutil import process_iter
 from write_values_to_db import add_test_values_into_db, get_column_names_from_table, \
     add_column_to_table, export_db_table_to_csv
 
-
 # python3 ./sync_tests/sync_test.py -d -t1 << tag_no1 >> -t2 << tag_no2 >> -e << env_type >>
 
 
@@ -345,11 +344,7 @@ def get_current_tip(tag_no, wait=False):
         if wait:
             return int(e.returncode)
         else:
-            raise RuntimeError(
-                "command '{}' return with error (code {}): {}".format(
-                    e.cmd, e.returncode, " ".join(str(e.output).split())
-                )
-            )
+            print(f"    !!!ERROR: command {e.cmd} return with error (code {e.returncode}): {' '.join(str(e.output).split())}")
 
 
 def get_node_version():
@@ -799,7 +794,14 @@ def main():
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
 
     print("******* move to 'sync_tests' directory")
-    os.chdir(Path(ROOT_TEST_PATH) / "sync_tests")
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+    print(f" - sync_tests listdir: {os.listdir(current_directory)}")
+
+    if env == "mainnet":
+        os.chdir(Path(ROOT_TEST_PATH) / "sync_tests")
+    else:
+        os.chdir(Path(ROOT_TEST_PATH) / "cardano-node-tests" / "sync_tests")
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
@@ -862,4 +864,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main()
-
