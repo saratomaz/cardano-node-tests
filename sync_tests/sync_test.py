@@ -63,7 +63,7 @@ def get_epoch_start_datetime(env, epoch_no):
         url = SHELLEY_QA_EXPLORER_URL
         res = requests.post(url, data=payload, headers=headers)
     else:
-        print(f"ERROR: the provided 'env' is not supported. Please use one of: shelley_qa, "
+        print(f"!!! ERROR: the provided 'env' is not supported. Please use one of: shelley_qa, "
               f"testnet, staging, mainnet")
         exit(1)
 
@@ -73,7 +73,7 @@ def get_epoch_start_datetime(env, epoch_no):
     else:
         print(f"status_code: {status_code}")
         print(f"response: {res.text}")
-        print(f"ERROR: status_code =! 200 when getting start time for epoch {epoch_no} on {env}")
+        print(f"!!! ERROR: status_code =! 200 when getting start time for epoch {epoch_no} on {env}")
         exit(1)
 
 
@@ -90,7 +90,7 @@ def git_get_commit_sha_for_tag_no(tag_no):
         if tag.get('name') == tag_no:
             return tag.get('commit').get('sha')
 
-    print(f" ===== ERROR: The specified tag_no - {tag_no} - was not found ===== ")
+    print(f" ===== !!! ERROR: The specified tag_no - {tag_no} - was not found ===== ")
     print(json.dumps(jData, indent=4, sort_keys=True))
     return None
 
@@ -108,7 +108,7 @@ def git_get_hydra_eval_link_for_commit_sha(commit_sha):
         if "hydra.iohk.io/eval" in status.get("target_url"):
             return status.get("target_url")
 
-    print(f" ===== ERROR: There is not eval link for the provided commit_sha - {commit_sha} =====")
+    print(f" ===== !!! ERROR: There is not eval link for the provided commit_sha - {commit_sha} =====")
     print(json.dumps(jData, indent=4, sort_keys=True))
     return None
 
@@ -119,7 +119,7 @@ def get_hydra_build_download_url(eval_url, os_type):
     expected_os_types = ["windows", "linux", "macos"]
     if os_type not in expected_os_types:
         raise Exception(
-            f" ===== ERROR: provided os_type - {os_type} - not expected - {expected_os_types}")
+            f" ===== !!! ERROR: provided os_type - {os_type} - not expected - {expected_os_types}")
 
     headers = {'Content-type': 'application/json'}
     eval_response = requests.get(eval_url, headers=headers)
@@ -149,7 +149,7 @@ def get_hydra_build_download_url(eval_url, os_type):
             if build_jData.get("job") == "cardano-node-macos":
                 return f"https://hydra.iohk.io/build/{build_no}/download/1/cardano-node-1.24.0-macos.tar.gz"
 
-    print(f" ===== ERROR: No build has found for the required os_type - {os_type} - {eval_url} ===")
+    print(f" ===== !!! ERROR: No build has found for the required os_type - {os_type} - {eval_url} ===")
     return None
 
 
@@ -390,7 +390,7 @@ def start_node_windows(env, tag_no):
             count += 1
             if count > count_timeout:
                 print(
-                    f"ERROR: waited {count_timeout} seconds and the DB folder was not created yet")
+                    f"!!! ERROR: waited {count_timeout} seconds and the DB folder was not created yet")
                 exit(1)
 
         print(f"DB folder was created after {count} seconds")
@@ -454,7 +454,7 @@ def stop_node():
     time.sleep(10)
     for proc in process_iter():
         if "cardano-node" in proc.name():
-            print(f" --- ERROR: `cardano-node` process is still active - {proc}")
+            print(f" !!! ERROR: `cardano-node` process is still active - {proc}")
 
 
 def show_percentage(part, whole):
@@ -793,11 +793,12 @@ def main():
     test_values_dict["platform_version"] = platform_version
     test_values_dict["chain_size_bytes"] = chain_size
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
-    test_values_dict["eras_in_test"] = list(era_details_dict1.keys())
+    test_values_dict["eras_in_test"] = json.dumps(era_details_dict1.keys())
 
     os.chdir(Path(ROOT_TEST_PATH))
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
+    print(f"Write the test values to the {current_directory / RESULTS_FILE_NAME} file")
     with open(RESULTS_FILE_NAME, 'w') as results_file:
         json.dump(test_values_dict, results_file, indent=2)
 

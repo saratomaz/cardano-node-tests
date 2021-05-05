@@ -1,7 +1,6 @@
 import json
 import os
 import sqlite3
-from collections import OrderedDict
 from sqlite3 import Error
 from pathlib import Path
 import argparse
@@ -17,7 +16,7 @@ def create_connection(db_file):
         conn = sqlite3.connect(db_file)
         return conn
     except Error as e:
-        print(f"Error connecting to the database:\n {e}")
+        print(f"!!! Error connecting to the database:\n {e}")
 
     return conn
 
@@ -160,15 +159,15 @@ def main():
     for key in sync_test_results_dict:
         print(f"{key}: {sync_test_results_dict[key]}")
 
-    print("  ==== Move to 'sync_tests' directory")
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
 
+    print("  ==== Move to 'sync_tests' directory")
     if env == "mainnet":
         os.chdir(current_directory / "sync_tests")
     else:
-        os.chdir(current_directory / "cardano-node-tests" / "sync_tests")
+        os.chdir(current_directory / "cardano_node_tests" / "sync_tests")
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
