@@ -753,12 +753,6 @@ def main():
     test_values_dict["ram_logs"] = json.dumps(ram_details_dict)
     test_values_dict["cpu_logs"] = json.dumps(cpu_details_dict)
 
-    print("--------------------------------------------")
-    print(f"ram_details_dict: {ram_details_dict}")
-    print("--------------------------------------------")
-    print(f"cpu_details_dict: {cpu_details_dict}")
-    print("--------------------------------------------")
-
     # Add the test values into the local copy of the database (to be pushed into sync tests repo)
     print("Node sync test ended; Creating the `test_values_dict` dict with the test values")
     print("++++++++++++++++++++++++++++++++++++++++++++++")

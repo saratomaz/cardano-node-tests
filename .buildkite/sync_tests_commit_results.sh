@@ -13,4 +13,3 @@ git add sync_tests/csv_files
 
 git commit -m "added mainnet sync test values"
 git push origin HEAD:dorin/sync_test1 --force
-
