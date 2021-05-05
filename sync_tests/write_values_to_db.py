@@ -97,7 +97,8 @@ def get_column_names_from_table(env):
     if env == "mainnet":
         database_path = Path(current_directory) / DATABASE_NAME
     else:
-        database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
+        # database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
+        database_path = Path(current_directory) / DATABASE_NAME
     print(f"database_path: {database_path}")
     conn = create_connection(database_path)
 
@@ -125,7 +126,8 @@ def add_column_to_table(env, column_name, column_type):
     if env == "mainnet":
         database_path = Path(current_directory) / DATABASE_NAME
     else:
-        database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
+        # database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
+        database_path = Path(current_directory) / DATABASE_NAME
     print(f"database_path: {database_path}")
     conn = create_connection(database_path)
 
