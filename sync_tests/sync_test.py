@@ -795,6 +795,9 @@ def main():
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
     test_values_dict["eras_in_test"] = list(era_details_dict1.keys())
 
+    os.chdir(Path(ROOT_TEST_PATH))
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
     with open(RESULTS_FILE_NAME, 'w') as results_file:
         json.dump(test_values_dict, results_file, indent=2)
 
