@@ -50,7 +50,6 @@ jobs:
       - name: run sync test
         run: |
           echo "current branch2: $(git branch --show-current)"
-
           cd cardano-node-tests
           cd ..
 
@@ -58,11 +57,12 @@ jobs:
       - name: commit and push DB changes for the sync test
         run: |
           cd cardano-node-tests
-
           echo "current branch3: $(git branch --show-current)"
 
-          git fetch origin
-          git merge origin/dorin/sync_test1
+          git config pull.rebase true
+          git pull origin dorin/sync_test1
+
+          python sync_tests/write_values_to_db.py -e ${{ matrix.env }}
 
           git add sync_tests/sync_tests_results.db
           git add sync_tests/csv_files

@@ -1,11 +1,14 @@
+import json
+import os
 import sqlite3
+from collections import OrderedDict
 from sqlite3 import Error
 from pathlib import Path
 import argparse
 import pandas as pd
 
-database_name = r"sync_tests_results.db"
-results_file_name = r"sync_results.log"
+DATABASE_NAME = r"sync_tests_results.db"
+RESULTS_FILE_NAME = r"sync_results.json"
 
 
 def create_connection(db_file):
@@ -23,7 +26,7 @@ def add_test_values_into_db(table_name, col_names_list, col_values_list):
     print(f"Write values into {table_name} table")
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
-    database_path = Path(current_directory) / database_name
+    database_path = Path(current_directory) / DATABASE_NAME
     print(f"database_path: {database_path}")
 
     col_names = ','.join(col_names_list)
@@ -46,45 +49,13 @@ def add_test_values_into_db(table_name, col_names_list, col_values_list):
     return True
 
 
-# def add_test_values_into_db(table_name, test_values):
-#     print(f"Write values into {table_name} table")
-#     current_directory = Path.cwd()
-#     database_path = Path(current_directory) / "sync_tests" / database_name
-#     print(f"database_path: {database_path}")
-#
-#     conn = create_connection(database_path)
-#     try:
-#         sql_query = f' INSERT INTO {table_name} ' \
-#               f'(env, tag_no1, tag_no2, cardano_cli_version1, cardano_cli_version2, ' \
-#               f'cardano_cli_git_rev1, cardano_cli_git_rev2, start_sync_time1, end_sync_time1, start_sync_time2, ' \
-#               f'end_sync_time2, byron_sync_time_secs1, shelley_sync_time_secs1, allegra_sync_time_seconds1, mary_sync_time_seconds1, ' \
-#               f'sync_time_after_restart_seconds, total_chunks1, total_chunks2, latest_block_no1, latest_block_no2, ' \
-#               f'latest_slot_no1, latest_slot_no2, start_node_seconds1, start_node_seconds2, platform_system, ' \
-#               f'platform_release, platform_version, chain_size, sync_details1) ' \
-#               f'VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-#
-#         print(f"sql: {sql_query}")
-#
-#         cur = conn.cursor()
-#         cur.execute(sql_query, test_values)
-#         conn.commit()
-#         cur.close()
-#     except sqlite3.Error as error:
-#         print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
-#         return False
-#     finally:
-#         if conn:
-#             conn.close()
-#     return True
-
-
 def export_db_table_to_csv(table_name):
     print(f"Export {table_name} table into CSV file")
     current_directory = Path.cwd()
 
     # TODO = make it work for github actions tests
     # database_path = Path(current_directory) / "sync_tests" / database_name
-    database_path = Path(current_directory) / database_name
+    database_path = Path(current_directory) / DATABASE_NAME
     # csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
     csv_files_path = Path(current_directory) / "csv_files"
 
@@ -118,16 +89,19 @@ def export_db_table_to_csv(table_name):
     return True
 
 
-def get_column_names_from_table(table_name):
+def get_column_names_from_table(env):
+    table_name = env
     print(f"Getting the column names from {table_name} table")
     current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
 
-    # TODO aaa
-    # database_path = Path(current_directory) / "sync_tests" / database_name
-    database_path = Path(current_directory) / database_name
-
+    if env == "mainnet":
+        database_path = Path(current_directory) / DATABASE_NAME
+    else:
+        database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
     print(f"database_path: {database_path}")
     conn = create_connection(database_path)
+
     try:
         sql_query = f"select * from {table_name}"
         print(f"sql_query: {sql_query}")
@@ -144,14 +118,15 @@ def get_column_names_from_table(table_name):
             conn.close()
 
 
-def add_column_to_table(table_name, column_name, column_type):
+def add_column_to_table(env, column_name, column_type):
+    table_name = env
     print(f"Adding column {column_name} with type {column_type} to {table_name} table")
     current_directory = Path.cwd()
 
-    # TODO aaa
-    # database_path = Path(current_directory) / "sync_tests" / database_name
-    database_path = Path(current_directory) / database_name
-
+    if env == "mainnet":
+        database_path = Path(current_directory) / DATABASE_NAME
+    else:
+        database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
     print(f"database_path: {database_path}")
     conn = create_connection(database_path)
 
@@ -171,36 +146,68 @@ def add_column_to_table(table_name, column_name, column_type):
             conn.close()
 
 
-# def main():
-#     env = vars(args)["environment"]
-#
-#     current_directory = Path.cwd()
-#     print(f"current_directory: {current_directory}")
-#
-#     # sync_test_clean_state.py is creating the "sync_results.log" file that has the test values
-#     # to be added into the db
-#     with open(current_directory / "sync_tests" / results_file_name, "r+") as file:
-#         file_values = file.read()
-#         print(f"file_values: {file_values}")
-#
-#         test_values = file_values.replace("(", "").replace(")", "").replace("'", "").split(", ", 28)
-#
-#     print(f"env: {env}")
-#     print(f"test_values: {test_values}")
-#
-#     # Add the test values into the local copy of the database (to be pushed into master)
-#     add_test_values_into_db(env, test_values)
-#
-#     # Export data into CSV file
-#     export_db_table_to_csv(env)
-#
-#
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description="Add sync test values into database\n\n")
-#
-#     parser.add_argument("-e", "--environment",
-#                         help="The environment on which to run the tests - shelley_qa, testnet, staging or mainnet.")
-#
-#     args = parser.parse_args()
-#
-#     main()
+def main():
+    env = vars(args)["environment"]
+
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+
+    print(f"  ==== Read the test results file - {current_directory / RESULTS_FILE_NAME}")
+    with open(RESULTS_FILE_NAME, "r") as json_file:
+        sync_test_results_dict = json.load(json_file)
+
+    print(f"type(sync_test_results_dict): {type(sync_test_results_dict)}")
+    for key in sync_test_results_dict:
+        print(f"{key}: {sync_test_results_dict[key]}")
+
+    print("  ==== Move to 'sync_tests' directory")
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+    print(f" - sync_tests listdir: {os.listdir(current_directory)}")
+
+    if env == "mainnet":
+        os.chdir(current_directory / "sync_tests")
+    else:
+        os.chdir(current_directory / "cardano-node-tests" / "sync_tests")
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+    print(f" - sync_tests listdir: {os.listdir(current_directory)}")
+
+    print("  ==== Check if there are DB columns for all the eras")
+
+    print(f"Get the list of the existing eras in test")
+    eras_in_test = sync_test_results_dict["eras_in_test"]
+    print(f"eras_in_test: {eras_in_test}")
+
+    print(f"Get the column names inside the DB tables")
+    table_column_names = get_column_names_from_table(env)
+    print(f"table_column_names: {table_column_names}")
+
+    for era in eras_in_test:
+        era_columns = [i for i in table_column_names if i.startswith(era)]
+        if len(era_columns) == 0:
+            print(f" === Adding columns for {era} era into the the {env} table")
+            new_columns_list = [str(era + "_start_time"), str(era + "_start_epoch"),
+                                str(era + "_slots_in_era"), str(era + "_start_sync_time"),
+                                str(era + "_end_sync_time"), str(era + "_sync_duration_secs")]
+            for column_name in new_columns_list:
+                add_column_to_table(env, column_name, "TEXT")
+
+    print("  ==== Write test values into the DB")
+    col_list = list(sync_test_results_dict.keys())
+    col_values = list(sync_test_results_dict.values())
+    add_test_values_into_db(env, col_list, col_values)
+
+    print(f"  ==== Exporting the {env} table as CSV")
+    export_db_table_to_csv(env)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Add sync test values into database\n\n")
+
+    parser.add_argument("-e", "--environment",
+                        help="The environment on which to run the tests - shelley_qa, testnet, staging or mainnet.")
+
+    args = parser.parse_args()
+
+    main()

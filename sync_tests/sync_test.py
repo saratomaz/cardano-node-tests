@@ -26,6 +26,7 @@ NODE = "./cardano-node"
 CLI = "./cardano-cli"
 ROOT_TEST_PATH = ""
 NODE_LOG_FILE = "logfile.log"
+RESULTS_FILE_NAME = r"sync_results.json"
 
 MAINNET_EXPLORER_URL = "https://explorer.cardano.org/graphql"
 STAGING_EXPLORER_URL = "https://explorer.staging.cardano.org/graphql"
@@ -548,7 +549,7 @@ def wait_for_node_to_sync(env, tag_no):
 
     os.chdir(Path(ROOT_TEST_PATH) / "db" / "immutable")
     chunk_files = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
-    latest_chunk_no = chunk_files[-1]
+    latest_chunk_no = chunk_files[-1].split(".")[0]
     os.chdir(Path(ROOT_TEST_PATH))
     print(f"Sync done!; latest_chunk_no: {latest_chunk_no}")
 
@@ -792,50 +793,10 @@ def main():
     test_values_dict["platform_version"] = platform_version
     test_values_dict["chain_size_bytes"] = chain_size
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
+    test_values_dict["eras_in_test"] = list(era_details_dict1.keys())
 
-    print("******* move to 'sync_tests' directory")
-    current_directory = Path.cwd()
-    print(f"current_directory: {current_directory}")
-    print(f" - sync_tests listdir: {os.listdir(current_directory)}")
-
-    if env == "mainnet":
-        os.chdir(Path(ROOT_TEST_PATH) / "sync_tests")
-    else:
-        os.chdir(Path(ROOT_TEST_PATH) / "cardano-node-tests" / "sync_tests")
-    current_directory = Path.cwd()
-    print(f"current_directory: {current_directory}")
-    print(f" - sync_tests listdir: {os.listdir(current_directory)}")
-
-    print("Check if there are DB columns for all the eras")
-    eras_in_test = list(era_details_dict1.keys())
-    print(f"eras_in_test: {eras_in_test}")
-    table_column_names = get_column_names_from_table(env)
-    print(f"table_column_names: {table_column_names}")
-    for era in eras_in_test:
-        era_columns = [i for i in table_column_names if i.startswith(era)]
-        if len(era_columns) == 0:
-            print(f" === Adding columns for {era} era into the the {env} table")
-            new_columns_list = [str(era + "_start_time"), str(era + "_start_epoch"),
-                                str(era + "_slots_in_era"), str(era + "_start_sync_time"),
-                                str(era + "_end_sync_time"), str(era + "_sync_duration_secs")]
-            for column_name in new_columns_list:
-                add_column_to_table(env, column_name, "TEXT")
-
-    print("++++++++++++++++++++++++++++++++++++++++++++++")
-    print(" === Write test values into the DB")
-    col_list = list(test_values_dict.keys())
-    col_values = list(test_values_dict.values())
-    add_test_values_into_db(env, col_list, col_values)
-
-    # Export data into CSV file
-    print(f" === Exporting the {env} table as CSV")
-    export_db_table_to_csv(env)
-
-    print("******* move to 'root' directory")
-    os.chdir(Path(ROOT_TEST_PATH))
-    current_directory = Path.cwd()
-    print(f"current_directory: {current_directory}")
-    print(f" - current_directory listdir: {os.listdir(current_directory)}")
+    with open(RESULTS_FILE_NAME, 'w') as results_file:
+        json.dump(test_values_dict, results_file, indent=2)
 
 
 if __name__ == "__main__":
