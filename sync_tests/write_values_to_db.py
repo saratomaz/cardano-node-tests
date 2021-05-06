@@ -178,7 +178,7 @@ def main():
     print("  ==== Check if there are DB columns for all the eras")
 
     print(f"Get the list of the existing eras in test")
-    eras_in_test = sync_test_results_dict["eras_in_test"].replace("[", "").replace("]", "").replace('"', '').strip().split(",")
+    eras_in_test = sync_test_results_dict["eras_in_test"].replace("[", "").replace("]", "").replace('"', '').split(", ")
     print(f"eras_in_test: {eras_in_test}")
 
     print(f"Get the column names inside the DB tables")
