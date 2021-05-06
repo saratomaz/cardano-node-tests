@@ -288,6 +288,10 @@ def get_os_type():
     return [platform.system(), platform.release(), platform.version()]
 
 
+def get_no_of_cpu_cores():
+    return os.cpu_count()
+
+
 def get_testnet_value():
     env = vars(args)["environment"]
     if env == "mainnet":
@@ -794,6 +798,7 @@ def main():
     test_values_dict["chain_size_bytes"] = chain_size
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
     test_values_dict["eras_in_test"] = json.dumps(list(era_details_dict1.keys()))
+    test_values_dict["no_of_cpu_cores"] = get_no_of_cpu_cores()
 
     os.chdir(Path(ROOT_TEST_PATH))
     current_directory = Path.cwd()
