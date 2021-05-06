@@ -81,10 +81,16 @@ def git_get_commit_sha_for_tag_no(tag_no):
     global jData
     url = "https://api.github.com/repos/input-output-hk/cardano-node/tags"
     response = requests.get(url)
-    if response.ok:
-        jData = json.loads(response.content)
-    else:
-        response.raise_for_status()
+
+    # there is a rate limit for the provided url that we want to overpass with the below while loop
+    count = 0
+    while not response.ok:
+        time.sleep(10)
+        count += 1
+        response = requests.get(url)
+        if count > 9:
+            response.raise_for_status()
+    jData = json.loads(response.content)
 
     for tag in jData:
         if tag.get('name') == tag_no:
