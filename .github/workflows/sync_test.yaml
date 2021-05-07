@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
     branches:
       - dorin/sync_test1
+      - sync_tests
     inputs:
       tag_no1:
         description: tag number1 - used for initial sync, from clean state
@@ -12,8 +13,27 @@ on:
         description: tag number2 - used for final sync, from existing state
         required: false
         default: "None"
+      db_sync_tag_no1:
+        description: db_sync tag number1 - used for initial sync, from clean state
+        required: false
+        default: "None"
+      db_sync_tag_no2:
+        description: db_sync tag number2 - used for final sync, from existing state
+        required: false
+        default: "None"
 
 jobs:
+  sync_test_mainnet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger the Buildkite pipeline - run sync tests on mainnet
+        uses: zegocover/buildkite-pipeline-action@master
+        with:
+          access_token: '${{ secrets.BUILDKITE_API_ACCESS_TOKEN }}'
+          pipeline: 'input-output-hk/qa-sync-tests'
+          message: ':github: Triggered by GitHub Action'
+          env: '{"tag_no1":"${{ github.event.inputs.tag_no1 }}", "tag_no2":"${{ github.event.inputs.tag_no2 }}"}'
+          branch: 'dorin/sync_test1'
   sync_test:
     strategy:
       matrix:
