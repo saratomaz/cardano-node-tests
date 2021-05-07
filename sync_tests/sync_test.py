@@ -115,7 +115,7 @@ def git_get_hydra_eval_link_for_commit_sha(commit_sha):
             return status.get("target_url")
 
     print(f" ===== !!! ERROR: There is not eval link for the provided commit_sha - {commit_sha} =====")
-    print(json.dumps(jData, indent=4, sort_keys=True))
+    print(json.dumps(jData, indent=2, sort_keys=True))
     return None
 
 
@@ -140,10 +140,16 @@ def get_hydra_build_download_url(eval_url, os_type):
     for build_no in eval_jData.get("builds"):
         build_url = f"https://hydra.iohk.io/build/{build_no}"
         build_response = requests.get(build_url, headers=headers)
-        if build_response.ok:
-            build_jData = json.loads(build_response.content)
-        else:
-            build_response.raise_for_status()
+
+        count = 0
+        while not build_response.ok:
+            time.sleep(2)
+            count += 1
+            build_response = requests.get(build_url, headers=headers)
+            if count > 9:
+                build_response.raise_for_status()
+
+        build_jData = json.loads(build_response.content)
 
         if os_type.lower() == "windows":
             if build_jData.get("job") == "cardano-node-win64":
@@ -161,14 +167,12 @@ def get_hydra_build_download_url(eval_url, os_type):
 
 def get_and_extract_node_files(tag_no):
     print(" - get and extract the pre-built node files")
-    # os.chdir(Path(CARDANO_NODE_TESTS_PATH))
+    current_directory = os.getcwd()
+    print(f" - current_directory: {current_directory}")
     platform_system, platform_release, platform_version = get_os_type()
 
     commit_sha = git_get_commit_sha_for_tag_no(tag_no)
     eval_url = git_get_hydra_eval_link_for_commit_sha(commit_sha)
-
-    # TODO - remove below line starting with 1.27.0 (tip returning era)
-    # eval_url = "https://hydra.iohk.io/eval/1044305"
 
     print(f"commit_sha  : {commit_sha}")
     print(f"eval_url    : {eval_url}")
@@ -314,48 +318,43 @@ def get_testnet_value():
 
 def wait_for_node_to_start(tag_no):
     # when starting from clean state it might take ~30 secs for the cli to work
-    # when starting from existing state it might take >5 mins for the cli to work (opening db and
+    # when starting from existing state it might take >10 mins for the cli to work (opening db and
     # replaying the ledger)
-    tip = get_current_tip(tag_no, True)
-    count = 0
-    while tip == 1:
-        time.sleep(10)
-        count += 1
-        tip = get_current_tip(tag_no, True)
-        if count >= 540:  # 90 mins
-            print(" **************  ERROR: waited 90 mins and CLI is still not usable ********* ")
-            print(f"      TIP: {get_current_tip(tag_no)}")
-            exit(1)
-    print(f"************** CLI became available after: {count * 10} seconds **************")
-    return count * 10
+    start_counter = time.perf_counter()
+    get_current_tip(tag_no, 5400)
+    stop_counter = time.perf_counter()
+
+    start_time_seconds = int(stop_counter - start_counter)
+    print(f" === It took {start_time_seconds} seconds for the QUERY TIP command to be available")
+    return start_time_seconds
 
 
-def get_current_tip(tag_no, wait=False):
+def get_current_tip(tag_no=None, timeout_seconds=10):
     # tag_no should have this format: 1.23.0, 1.24.1, etc
-    if int(tag_no.split(".")[1]) < 24:
-        cmd = CLI + " shelley query tip " + get_testnet_value()
-    else:
-        cmd = CLI + " query tip " + get_testnet_value()
-    try:
-        output = (
-            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-                .decode("utf-8")
-                .strip()
-        )
-        output_json = json.loads(output)
+    cmd = CLI + " query tip " + get_testnet_value()
 
-        print(f"output_json: {output_json}")
+    for i in range(timeout_seconds):
+        try:
+            output = (
+                subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+                    .decode("utf-8")
+                    .strip()
+            )
+            output_json = json.loads(output)
 
-        if output_json["epoch"] is not None:
-            output_json["epoch"] = int(output_json["epoch"])
+            print(f"output_json: {output_json}")
 
-        return output_json["epoch"], int(output_json["block"]), output_json["hash"], \
-               int(output_json["slot"]), output_json["era"].lower()
-    except subprocess.CalledProcessError as e:
-        if wait:
-            return int(e.returncode)
-        else:
-            print(f"    !!!ERROR: command {e.cmd} return with error (code {e.returncode}): {' '.join(str(e.output).split())}")
+            if output_json["epoch"] is not None:
+                output_json["epoch"] = int(output_json["epoch"])
+
+            return output_json["epoch"], int(output_json["block"]), output_json["hash"], \
+                   int(output_json["slot"]), output_json["era"].lower()
+        except subprocess.CalledProcessError as e:
+            print(f" === Waiting 1s before retrying to get the tip again {i}")
+            print(f"     !!!ERROR: command {e.cmd} return with error (code {e.returncode}): {' '.join(str(e.output).split())}")
+            pass
+        time.sleep(1)
+    exit(1)
 
 
 def get_node_version():
@@ -627,6 +626,7 @@ def get_data_from_logs(log_file):
 
     tip_details_dict = OrderedDict()
     ram_details_dict = OrderedDict()
+    centi_cpu_dict = OrderedDict()
     cpu_details_dict = OrderedDict()
 
     with open(log_file) as f:
@@ -639,13 +639,24 @@ def get_data_from_logs(log_file):
             if len(ram_value) > 0:
                 ram_details_dict[timestamp] = ram_value[0].split(' ')[1]
 
-            cpu_value = re.findall(r'"CentiCpu",Number \d+\.\d+', line)
-            if len(cpu_value) > 0:
-                cpu_details_dict[timestamp] = cpu_value[0].split(' ')[1]
+            centi_cpu = re.findall(r'"CentiCpu",Number \d+\.\d+', line)
+            if len(centi_cpu) > 0:
+                centi_cpu_dict[timestamp] = centi_cpu[0].split(' ')[1]
         if "new tip" in line:
             timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
             slot_no = line.split(" at slot ")[1]
             tip_details_dict[timestamp] = slot_no
+
+    no_of_cpu_cores = get_no_of_cpu_cores()
+    timestamps_list = list(centi_cpu_dict.keys())
+    for timestamp in timestamps_list[1:]:
+        # %CPU = dValue / dt for 1 core
+        previous_timestamp = datetime.strptime(timestamps_list[timestamps_list.index(timestamp) - 1], "%Y-%m-%d %H:%M:%S")
+        current_timestamp = datetime.strptime(timestamps_list[timestamps_list.index(timestamp)], "%Y-%m-%d %H:%M:%S")
+        previous_value = float(centi_cpu_dict[timestamps_list[timestamps_list.index(timestamp) - 1]])
+        current_value = float(centi_cpu_dict[timestamps_list[timestamps_list.index(timestamp)]])
+        cpu_load_percent = (current_value - previous_value) / date_diff_in_seconds(current_timestamp, previous_timestamp)
+        cpu_details_dict[timestamp] = cpu_load_percent / no_of_cpu_cores
 
     return tip_details_dict, ram_details_dict, cpu_details_dict
 
