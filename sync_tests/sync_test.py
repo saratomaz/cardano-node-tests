@@ -161,7 +161,7 @@ def get_hydra_build_download_url(eval_url, os_type):
             if build_jData.get("job") == "cardano-node-macos":
                 return f"https://hydra.iohk.io/build/{build_no}/download/1/cardano-node-1.24.0-macos.tar.gz"
 
-    print(f" ===== !!! ERROR: No build has found for the required os_type - {os_type} - {eval_url} ===")
+    print(f" ===== !!! ERROR: No build has found for the required os_type - {os_type} - {eval_url}")
     return None
 
 
