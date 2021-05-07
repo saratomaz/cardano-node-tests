@@ -350,8 +350,10 @@ def get_current_tip(tag_no=None, timeout_seconds=10):
             return output_json["epoch"], int(output_json["block"]), output_json["hash"], \
                    int(output_json["slot"]), output_json["era"].lower()
         except subprocess.CalledProcessError as e:
-            print(f" === Waiting 1s before retrying to get the tip again {i}")
+            print(f" === Waiting 1s before retrying to get the tip again - {i}")
             print(f"     !!!ERROR: command {e.cmd} return with error (code {e.returncode}): {' '.join(str(e.output).split())}")
+            if "Invalid argument" in str(e.output):
+                exit(1)
             pass
         time.sleep(1)
     exit(1)

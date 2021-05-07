@@ -32,7 +32,12 @@ jobs:
           access_token: '${{ secrets.BUILDKITE_API_ACCESS_TOKEN }}'
           pipeline: 'input-output-hk/qa-sync-tests'
           message: ':github: Triggered by GitHub Action'
-          env: '{"tag_no1":"${{ github.event.inputs.tag_no1 }}", "tag_no2":"${{ github.event.inputs.tag_no2 }}"}'
+          env: '{
+          "tag_no1":"${{ github.event.inputs.tag_no1 }}",
+          "tag_no2":"${{ github.event.inputs.tag_no2 }}",
+          "dt_tag_no1":"${{ github.event.inputs.db_sync_tag_no1 }}",
+          "dt_tag_no2":"${{ github.event.inputs.db_sync_tag_no2 }}"
+          }'
           branch: 'dorin/sync_test1'
   sync_test:
     strategy:
