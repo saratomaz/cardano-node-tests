@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+from collections import OrderedDict
 from sqlite3 import Error
 from pathlib import Path
 import argparse
@@ -53,9 +54,7 @@ def export_db_table_to_csv(table_name):
     current_directory = Path.cwd()
 
     # TODO = make it work for github actions tests
-    # database_path = Path(current_directory) / "sync_tests" / database_name
     database_path = Path(current_directory) / DATABASE_NAME
-    # csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
     csv_files_path = Path(current_directory) / "csv_files"
 
     print(f"database_path : {database_path}")
@@ -94,11 +93,7 @@ def get_column_names_from_table(env):
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
 
-    if env == "mainnet":
-        database_path = Path(current_directory) / DATABASE_NAME
-    else:
-        # database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
-        database_path = Path(current_directory) / DATABASE_NAME
+    database_path = Path(current_directory) / DATABASE_NAME
     print(f"database_path: {database_path}")
     conn = create_connection(database_path)
 
@@ -118,16 +113,36 @@ def get_column_names_from_table(env):
             conn.close()
 
 
+def get_last_row_no(table_name):
+    print(f"Getting the last row no from {table_name} table")
+    current_directory = Path.cwd()
+    print(f"current_directory: {current_directory}")
+
+    database_path = Path(current_directory) / DATABASE_NAME
+    print(f"database_path: {database_path}")
+    conn = create_connection(database_path)
+
+    sql_query = f"SELECT count(*) FROM {table_name};"
+    print(f"sql_query: {sql_query}")
+    try:
+        cur = conn.cursor()
+        cur.execute(sql_query)
+        last_row_no = cur.fetchone()[0]
+        return last_row_no
+    except sqlite3.Error as error:
+        print(f"!!! ERROR: Failed to get the last row no from {table_name} table:\n", error)
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+
 def add_column_to_table(env, column_name, column_type):
     table_name = env
     print(f"Adding column {column_name} with type {column_type} to {table_name} table")
     current_directory = Path.cwd()
 
-    if env == "mainnet":
-        database_path = Path(current_directory) / DATABASE_NAME
-    else:
-        # database_path = Path(current_directory) / "sync_tests" / DATABASE_NAME
-        database_path = Path(current_directory) / DATABASE_NAME
+    database_path = Path(current_directory) / DATABASE_NAME
     print(f"database_path: {database_path}")
     conn = create_connection(database_path)
 
@@ -157,7 +172,6 @@ def main():
     with open(RESULTS_FILE_NAME, "r") as json_file:
         sync_test_results_dict = json.load(json_file)
 
-    print(f"type(sync_test_results_dict): {type(sync_test_results_dict)}")
     for key in sync_test_results_dict:
         print(f"{key}: {sync_test_results_dict[key]}")
 
@@ -166,11 +180,7 @@ def main():
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
 
     print("  ==== Move to 'sync_tests' directory")
-    if env == "mainnet":
-        os.chdir(current_directory / "sync_tests")
-    else:
-        # os.chdir(current_directory / "cardano_node_tests" / "sync_tests")
-        os.chdir(current_directory / "sync_tests")
+    os.chdir(current_directory / "sync_tests")
     current_directory = Path.cwd()
     print(f"current_directory: {current_directory}")
     print(f" - sync_tests listdir: {os.listdir(current_directory)}")
@@ -178,10 +188,11 @@ def main():
     print("  ==== Check if there are DB columns for all the eras")
 
     print(f"Get the list of the existing eras in test")
-    eras_in_test = sync_test_results_dict["eras_in_test"].replace("[", "").replace("]", "").replace('"', '').split(", ")
+    eras_in_test = sync_test_results_dict["eras_in_test"].replace("[", "").replace("]", "").replace(
+        '"', '').split(", ")
     print(f"eras_in_test: {eras_in_test}")
 
-    print(f"Get the column names inside the DB tables")
+    print(f"Get the column names inside the main DB tables")
     table_column_names = get_column_names_from_table(env)
     print(f"table_column_names: {table_column_names}")
 
@@ -195,13 +206,51 @@ def main():
             for column_name in new_columns_list:
                 add_column_to_table(env, column_name, "TEXT")
 
-    print("  ==== Write test values into the DB")
+    sync_test_results_dict["identifier"] = sync_test_results_dict["env"] + "_" + str(get_last_row_no(env))
+
+    print(f"  ==== Write test values into the {env + '_logs_table'} DB table")
+    timestamp_list = list(sync_test_results_dict["log_values"].keys)
+    print(f"timestamp_list: {timestamp_list}")
+    for timestamp1 in timestamp_list:
+        line_dict = OrderedDict()
+        line_dict["identifier"] = sync_test_results_dict["identifier"]
+        line_dict["slot_no"] = sync_test_results_dict["log_values"][timestamp1]["tip"]
+        line_dict["ram_bytes"] = sync_test_results_dict["log_values"][timestamp1]["ram"]
+        line_dict["cpu_percent"] = sync_test_results_dict["log_values"][timestamp1]["cpu"]
+
+        col_list2 = list(line_dict.keys())
+        col_values2 = list(line_dict.values())
+        add_test_values_into_db(env + "_logs", col_list2, col_values2)
+
+    print(f"  ==== Write test values into the {env + '_epoch_duration_table'} DB table")
+    epoch_list = list(sync_test_results_dict["sync_duration_per_epoch"].keys)
+    print(f"epoch_list: {epoch_list}")
+    for epoch in epoch_list:
+        sync_duration_per_epoch_dict = OrderedDict()
+        sync_duration_per_epoch_dict["identifier"] = sync_test_results_dict["identifier"]
+        sync_duration_per_epoch_dict["epoch_no"] = epoch
+        sync_duration_per_epoch_dict["sync_duration_secs"] = sync_test_results_dict["sync_duration_per_epoch"][epoch]
+
+        col_list3 = list(sync_duration_per_epoch_dict.keys())
+        col_values3 = list(sync_duration_per_epoch_dict.values())
+        add_test_values_into_db(env + "_epoch_duration", col_list3, col_values3)
+
+    print(f"  ==== Write test values into the {env} DB table")
+    del sync_test_results_dict["sync_duration_per_epoch"]
+    del sync_test_results_dict["log_values"]
+
     col_list = list(sync_test_results_dict.keys())
     col_values = list(sync_test_results_dict.values())
     add_test_values_into_db(env, col_list, col_values)
 
     print(f"  ==== Exporting the {env} table as CSV")
     export_db_table_to_csv(env)
+
+    print(f"  ==== Exporting the {env + '_logs_table'} table as CSV")
+    export_db_table_to_csv(env + '_logs_table')
+
+    print(f"  ==== Exporting the {env + '_epoch_duration'} table as CSV")
+    export_db_table_to_csv(env + '_epoch_duration')
 
 
 if __name__ == "__main__":

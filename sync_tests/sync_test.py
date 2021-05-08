@@ -610,6 +610,11 @@ def date_diff_in_seconds(dt2, dt1):
     return int(timedelta.days * 24 * 3600 + timedelta.seconds)
 
 
+def seconds_to_time(seconds_val):
+    # dt1 and dt2 should be datetime types
+    return str(datetime.timedelta(seconds=seconds_val))
+
+
 def get_no_of_slots_per_era(env, era_name):
     slot_length_secs = 1
     if env == "shelley_qa":
@@ -630,13 +635,14 @@ def get_data_from_logs(log_file):
     ram_details_dict = OrderedDict()
     centi_cpu_dict = OrderedDict()
     cpu_details_dict = OrderedDict()
+    logs_details_dict = OrderedDict()
 
     with open(log_file) as f:
         log_file_lines = [line.rstrip() for line in f]
 
     for line in log_file_lines:
+        timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
         if "cardano.node.resources" in line:
-            timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
             ram_value = re.findall(r'"Heap",Number [-+]?[\d]+\.?[\d]*[Ee](?:[-+]?[\d]+)?', line)
             if len(ram_value) > 0:
                 ram_details_dict[timestamp] = ram_value[0].split(' ')[1]
@@ -645,22 +651,36 @@ def get_data_from_logs(log_file):
             if len(centi_cpu) > 0:
                 centi_cpu_dict[timestamp] = centi_cpu[0].split(' ')[1]
         if "new tip" in line:
-            timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
             slot_no = line.split(" at slot ")[1]
             tip_details_dict[timestamp] = slot_no
 
     no_of_cpu_cores = get_no_of_cpu_cores()
     timestamps_list = list(centi_cpu_dict.keys())
-    for timestamp in timestamps_list[1:]:
+    for timestamp1 in timestamps_list[1:]:
         # %CPU = dValue / dt for 1 core
-        previous_timestamp = datetime.strptime(timestamps_list[timestamps_list.index(timestamp) - 1], "%Y-%m-%d %H:%M:%S")
-        current_timestamp = datetime.strptime(timestamps_list[timestamps_list.index(timestamp)], "%Y-%m-%d %H:%M:%S")
-        previous_value = float(centi_cpu_dict[timestamps_list[timestamps_list.index(timestamp) - 1]])
-        current_value = float(centi_cpu_dict[timestamps_list[timestamps_list.index(timestamp)]])
+        previous_timestamp = datetime.strptime(timestamps_list[timestamps_list.index(timestamp1) - 1], "%Y-%m-%d %H:%M:%S")
+        current_timestamp = datetime.strptime(timestamps_list[timestamps_list.index(timestamp1)], "%Y-%m-%d %H:%M:%S")
+        previous_value = float(centi_cpu_dict[timestamps_list[timestamps_list.index(timestamp1) - 1]])
+        current_value = float(centi_cpu_dict[timestamps_list[timestamps_list.index(timestamp1)]])
         cpu_load_percent = (current_value - previous_value) / date_diff_in_seconds(current_timestamp, previous_timestamp)
-        cpu_details_dict[timestamp] = cpu_load_percent / no_of_cpu_cores
+        cpu_details_dict[timestamp1] = cpu_load_percent / no_of_cpu_cores
 
-    return tip_details_dict, ram_details_dict, cpu_details_dict
+    all_timestamps_list = set(list(tip_details_dict.keys()) + list(ram_details_dict.keys()) + list(cpu_details_dict.keys()))
+    for timestamp2 in all_timestamps_list:
+        if timestamp2 not in list(tip_details_dict.keys()):
+            tip_details_dict[timestamp2] = ""
+        if timestamp2 not in list(ram_details_dict.keys()):
+            ram_details_dict[timestamp2] = ""
+        if timestamp2 not in list(cpu_details_dict.keys()):
+            cpu_details_dict[timestamp2] = ""
+
+        logs_details_dict[timestamp2] = {
+            "tip": tip_details_dict[timestamp2],
+            "ram": ram_details_dict[timestamp2],
+            "cpu": cpu_details_dict[timestamp2]
+        }
+
+    return logs_details_dict
 
 
 def main():
@@ -730,8 +750,9 @@ def main():
 
     (cardano_cli_version2, cardano_cli_git_rev2, shelley_sync_time_seconds2, total_chunks2,
      latest_block_no2, latest_slot_no2, start_sync_time2, end_sync_time2, start_sync_time3,
-     sync_time_after_restart_seconds, cli_version2, cli_git_rev2, last_slot_no2, latest_chunk_no2
-     ) = (None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+     sync_time_after_restart_seconds, cli_version2, cli_git_rev2, last_slot_no2, latest_chunk_no2,
+     sync_time_seconds2
+     ) = (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
     if tag_no2 != "None":
         print(f"   =============== Stop node using tag_no1: {tag_no1} ======================")
         stop_node()
@@ -764,10 +785,8 @@ def main():
 
     test_values_dict = OrderedDict()
     print(" === Parse the node logs and get the relevant data")
-    tip_details_dict, ram_details_dict, cpu_details_dict = get_data_from_logs(NODE_LOG_FILE)
-    test_values_dict["tip_logs"] = json.dumps(tip_details_dict)
-    test_values_dict["ram_logs"] = json.dumps(ram_details_dict)
-    test_values_dict["cpu_logs"] = json.dumps(cpu_details_dict)
+    logs_details_dict = get_data_from_logs(NODE_LOG_FILE)
+    test_values_dict["log_values"] = json.dumps(logs_details_dict)
 
     # Add the test values into the local copy of the database (to be pushed into sync tests repo)
     print("Node sync test ended; Creating the `test_values_dict` dict with the test values")
@@ -786,7 +805,8 @@ def main():
 
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     epoch_details = OrderedDict()
-    for epoch in epoch_details_dict1:
+    # ignoring the current/last epoch that is not synced completely
+    for epoch in epoch_details_dict1[:-1]:
         print(f"{epoch} --> {epoch_details_dict1[epoch]}")
         epoch_details[epoch] = epoch_details_dict1[epoch]["sync_duration_secs"]
     print("++++++++++++++++++++++++++++++++++++++++++++++")
@@ -806,6 +826,10 @@ def main():
     test_values_dict["last_slot_no2"] = last_slot_no2
     test_values_dict["start_node_secs1"] = secs_to_start1
     test_values_dict["start_node_secs2"] = secs_to_start2
+    test_values_dict["sync_time_seconds1"] = sync_time_seconds1
+    test_values_dict["sync_time1"] = seconds_to_time(int(sync_time_seconds1))
+    test_values_dict["sync_time_seconds2"] = sync_time_seconds2
+    test_values_dict["sync_time2"] = seconds_to_time(int(sync_time_seconds2))
     test_values_dict["total_chunks1"] = latest_chunk_no1
     test_values_dict["total_chunks2"] = latest_chunk_no2
     test_values_dict["platform_system"] = platform_system

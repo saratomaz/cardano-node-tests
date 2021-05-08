@@ -29,6 +29,7 @@ def create_table(conn, create_table_sql):
 
 def create_db_tables():
     shelley_qa_table = """ CREATE TABLE IF NOT EXISTS shelley_qa (
+                                        identifier text NOT NULL PRIMARY KEY,
                                         env text NOT NULL,
                                         tag_no1 text NOT NULL,
                                         tag_no2 text,
@@ -43,7 +44,11 @@ def create_db_tables():
                                         last_slot_no1 text NOT NULL,
                                         last_slot_no2 text,
                                         start_node_secs1 text NOT NULL,
-                                        start_node_secs2 text,                                                                              
+                                        start_node_secs2 text,     
+                                        sync_time_seconds1 integer,  
+                                        sync_time1 text,  
+                                        sync_time_seconds2 integer,  
+                                        sync_time2 text,                                                                                                                   
                                         total_chunks1 integer NOT NULL,
                                         total_chunks2 integer,
                                         platform_system text NOT NULL,
@@ -79,14 +84,11 @@ def create_db_tables():
                                         mary_start_sync_time text,
                                         mary_end_sync_time text,
                                         mary_sync_duration_secs integer,
-                                        mary_sync_speed_sps integer,
-                                        sync_duration_per_epoch text,
-                                        tip_logs text,
-                                        ram_logs text,
-                                        cpu_logs text
+                                        mary_sync_speed_sps integer
                                     ); """
 
     testnet_table = """ CREATE TABLE IF NOT EXISTS testnet (
+                                        identifier text NOT NULL PRIMARY KEY,
                                         env text NOT NULL,
                                         tag_no1 text NOT NULL,
                                         tag_no2 text,
@@ -101,7 +103,11 @@ def create_db_tables():
                                         last_slot_no1 text NOT NULL,
                                         last_slot_no2 text,
                                         start_node_secs1 text NOT NULL,
-                                        start_node_secs2 text,                                                                              
+                                        start_node_secs2 text,     
+                                        sync_time_seconds1 integer,  
+                                        sync_time1 text,  
+                                        sync_time_seconds2 integer,  
+                                        sync_time2 text,                                                                           
                                         total_chunks1 integer NOT NULL,
                                         total_chunks2 integer,
                                         platform_system text NOT NULL,
@@ -137,14 +143,11 @@ def create_db_tables():
                                         mary_start_sync_time text,
                                         mary_end_sync_time text,
                                         mary_sync_duration_secs integer,
-                                        mary_sync_speed_sps integer,
-                                        sync_duration_per_epoch text,
-                                        tip_logs text,
-                                        ram_logs text,
-                                        cpu_logs text
+                                        mary_sync_speed_sps integer
                                     ); """
 
     staging_table = """ CREATE TABLE IF NOT EXISTS staging (
+                                        identifier text NOT NULL PRIMARY KEY,
                                         env text NOT NULL,
                                         tag_no1 text NOT NULL,
                                         tag_no2 text,
@@ -159,7 +162,11 @@ def create_db_tables():
                                         last_slot_no1 text NOT NULL,
                                         last_slot_no2 text,
                                         start_node_secs1 text NOT NULL,
-                                        start_node_secs2 text,                                                                              
+                                        start_node_secs2 text,    
+                                        sync_time_seconds1 integer,  
+                                        sync_time1 text,  
+                                        sync_time_seconds2 integer,  
+                                        sync_time2 text,                                                                            
                                         total_chunks1 integer NOT NULL,
                                         total_chunks2 integer,
                                         platform_system text NOT NULL,
@@ -195,14 +202,11 @@ def create_db_tables():
                                         mary_start_sync_time text,
                                         mary_end_sync_time text,
                                         mary_sync_duration_secs integer,
-                                        mary_sync_speed_sps integer,
-                                        sync_duration_per_epoch text,
-                                        tip_logs text,
-                                        ram_logs text,
-                                        cpu_logs text
+                                        mary_sync_speed_sps integer
                                     ); """
 
     mainnet_table = """ CREATE TABLE IF NOT EXISTS mainnet (
+                                        identifier text NOT NULL PRIMARY KEY,
                                         env text NOT NULL,
                                         tag_no1 text NOT NULL,
                                         tag_no2 text,
@@ -217,7 +221,11 @@ def create_db_tables():
                                         last_slot_no1 text NOT NULL,
                                         last_slot_no2 text,
                                         start_node_secs1 text NOT NULL,
-                                        start_node_secs2 text,                                                                              
+                                        start_node_secs2 text,    
+                                        sync_time_seconds1 integer,  
+                                        sync_time1 text,  
+                                        sync_time_seconds2 integer,  
+                                        sync_time2 text,                                                                            
                                         total_chunks1 integer NOT NULL,
                                         total_chunks2 integer,
                                         platform_system text NOT NULL,
@@ -253,11 +261,21 @@ def create_db_tables():
                                         mary_start_sync_time text,
                                         mary_end_sync_time text,
                                         mary_sync_duration_secs integer,
-                                        mary_sync_speed_sps integer,
-                                        sync_duration_per_epoch text,
-                                        tip_logs text,
-                                        ram_logs text,
-                                        cpu_logs text
+                                        mary_sync_speed_sps integer
+                                    ); """
+
+    mainnet_logs_table = """ CREATE TABLE IF NOT EXISTS mainnet_logs (
+                                        identifier text NOT NULL,
+                                        timestamp text,
+                                        slot_no integer,
+                                        ram_bytes text,
+                                        cpu_percent text
+                                    ); """
+
+    mainnet_epoch_duration_table = """ CREATE TABLE IF NOT EXISTS mainnet_epoch_duration (
+                                        identifier text NOT NULL,
+                                        epoch_no integer,
+                                        sync_duration_secs integer
                                     ); """
 
     # create a database connection
@@ -268,6 +286,8 @@ def create_db_tables():
         testnet_table,
         staging_table,
         mainnet_table,
+        mainnet_logs_table,
+        mainnet_epoch_duration_table,
     ]
 
     # create tables
