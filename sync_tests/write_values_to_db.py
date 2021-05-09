@@ -212,7 +212,6 @@ def main():
     print(f"  ==== Write test values into the {env + '_logs_table'} DB table")
     log_values_json = ast.literal_eval(str((sync_test_results_dict["log_values"])))
     timestamp_list = list(log_values_json.keys())
-    print(f"timestamp_list: {timestamp_list}")
     for timestamp1 in timestamp_list:
         line_dict = OrderedDict()
         line_dict["identifier"] = sync_test_results_dict["identifier"]
