@@ -85,10 +85,10 @@ def git_get_commit_sha_for_tag_no(tag_no):
     # there is a rate limit for the provided url that we want to overpass with the below while loop
     count = 0
     while not response.ok:
-        time.sleep(10)
+        time.sleep(30)
         count += 1
         response = requests.get(url)
-        if count > 9:
+        if count > 10:
             response.raise_for_status()
     jData = json.loads(response.content)
 
@@ -755,7 +755,7 @@ def main():
      latest_block_no2, latest_slot_no2, start_sync_time2, end_sync_time2, start_sync_time3,
      sync_time_after_restart_seconds, cli_version2, cli_git_rev2, last_slot_no2, latest_chunk_no2,
      sync_time_seconds2
-     ) = (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+     ) = (None, None, None, None, None, None, None, None, None, None, None, None, None, None, 0)
     if tag_no2 != "None":
         print(f"   =============== Stop node using tag_no1: {tag_no1} ======================")
         stop_node()
