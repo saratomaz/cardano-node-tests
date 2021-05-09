@@ -225,7 +225,8 @@ def main():
     print(f"  ==== Write test values into the {env + '_epoch_duration_table'} DB table")
     epoch_list = list(sync_test_results_dict["sync_duration_per_epoch"].keys)
     print(f"epoch_list: {epoch_list}")
-    for epoch in epoch_list:
+    for epoch in epoch_list[:-1]:
+        # ignoring the current/last epoch that is not synced completely
         sync_duration_per_epoch_dict = OrderedDict()
         sync_duration_per_epoch_dict["identifier"] = sync_test_results_dict["identifier"]
         sync_duration_per_epoch_dict["epoch_no"] = epoch
