@@ -87,6 +87,20 @@ def create_db_tables():
                                         mary_sync_speed_sps integer
                                     ); """
 
+    testnet_logs_table = """ CREATE TABLE IF NOT EXISTS testnet_logs (
+                                        identifier text NOT NULL,
+                                        timestamp text,
+                                        slot_no integer,
+                                        ram_bytes text,
+                                        cpu_percent text
+                                    ); """
+
+    testnet_epoch_duration_table = """ CREATE TABLE IF NOT EXISTS testnet_epoch_duration (
+                                        identifier text NOT NULL,
+                                        epoch_no integer,
+                                        sync_duration_secs integer
+                                    ); """
+
     testnet_table = """ CREATE TABLE IF NOT EXISTS testnet (
                                         identifier text NOT NULL PRIMARY KEY,
                                         env text NOT NULL,
@@ -146,6 +160,20 @@ def create_db_tables():
                                         mary_sync_speed_sps integer
                                     ); """
 
+    shelley_qa_logs_table = """ CREATE TABLE IF NOT EXISTS shelley_qa_logs (
+                                        identifier text NOT NULL,
+                                        timestamp text,
+                                        slot_no integer,
+                                        ram_bytes text,
+                                        cpu_percent text
+                                    ); """
+
+    shelley_qa_epoch_duration_table = """ CREATE TABLE IF NOT EXISTS shelley_qa_epoch_duration (
+                                        identifier text NOT NULL,
+                                        epoch_no integer,
+                                        sync_duration_secs integer
+                                    ); """
+
     staging_table = """ CREATE TABLE IF NOT EXISTS staging (
                                         identifier text NOT NULL PRIMARY KEY,
                                         env text NOT NULL,
@@ -203,6 +231,20 @@ def create_db_tables():
                                         mary_end_sync_time text,
                                         mary_sync_duration_secs integer,
                                         mary_sync_speed_sps integer
+                                    ); """
+
+    staging_logs_table = """ CREATE TABLE IF NOT EXISTS staging_logs (
+                                        identifier text NOT NULL,
+                                        timestamp text,
+                                        slot_no integer,
+                                        ram_bytes text,
+                                        cpu_percent text
+                                    ); """
+
+    staging_epoch_duration_table = """ CREATE TABLE IF NOT EXISTS staging_epoch_duration (
+                                        identifier text NOT NULL,
+                                        epoch_no integer,
+                                        sync_duration_secs integer
                                     ); """
 
     mainnet_table = """ CREATE TABLE IF NOT EXISTS mainnet (
@@ -283,8 +325,14 @@ def create_db_tables():
 
     create_tables_list = [
         shelley_qa_table,
+        shelley_qa_logs_table,
+        shelley_qa_epoch_duration_table,
         testnet_table,
+        testnet_logs_table,
+        testnet_epoch_duration_table,
         staging_table,
+        staging_logs_table,
+        staging_epoch_duration_table,
         mainnet_table,
         mainnet_logs_table,
         mainnet_epoch_duration_table,

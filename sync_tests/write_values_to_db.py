@@ -212,10 +212,6 @@ def main():
     print(f"  ==== Write test values into the {env + '_logs_table'} DB table")
     log_values_json = ast.literal_eval(str((sync_test_results_dict["log_values"])))
 
-    # TODO
-    print(f"log_values_json: {log_values_json}")
-    print(f"type log_values_json: {type(log_values_json)}")
-
     timestamp_list = list(log_values_json.keys())
     print(f"timestamp_list: {timestamp_list}")
     for timestamp1 in timestamp_list:
