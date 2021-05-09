@@ -226,7 +226,13 @@ def main():
         add_test_values_into_db(env + "_logs", col_list2, col_values2)
 
     print(f"  ==== Write test values into the {env + '_epoch_duration_table'} DB table")
-    sync_duration_values_json = ast.literal_eval(str((sync_test_results_dict["sync_duration_per_epoch"])))
+    sync_duration_values_json = ast.literal_eval(str(sync_test_results_dict["sync_duration_per_epoch"]))
+
+    print(f"sync_duration_values_json: {sync_duration_values_json}")
+    print(f"type(sync_duration_values_json): {type(sync_duration_values_json)}")
+    print(f"list(sync_duration_values_json): {list(sync_duration_values_json.keys)}")
+
+
     epoch_list = list(sync_duration_values_json.keys)
     print(f"epoch_list: {epoch_list}")
     for epoch in epoch_list[:-1]:
