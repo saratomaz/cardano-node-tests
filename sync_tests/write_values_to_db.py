@@ -229,10 +229,8 @@ def main():
 
     print(f"sync_duration_values_json: {sync_duration_values_json}")
     print(f"type(sync_duration_values_json): {type(sync_duration_values_json)}")
-    print(f"list(sync_duration_values_json): {list(sync_duration_values_json.keys)}")
 
-
-    epoch_list = list(sync_duration_values_json.keys)
+    epoch_list = list(sync_duration_values_json.keys())
     print(f"epoch_list: {epoch_list}")
     for epoch in epoch_list[:-1]:
         # ignoring the current/last epoch that is not synced completely
