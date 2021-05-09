@@ -216,6 +216,7 @@ def main():
     for timestamp1 in timestamp_list:
         line_dict = OrderedDict()
         line_dict["identifier"] = sync_test_results_dict["identifier"]
+        line_dict["timestamp"] = timestamp1
         line_dict["slot_no"] = log_values_json[timestamp1]["tip"]
         line_dict["ram_bytes"] = log_values_json[timestamp1]["ram"]
         line_dict["cpu_percent"] = log_values_json[timestamp1]["cpu"]
