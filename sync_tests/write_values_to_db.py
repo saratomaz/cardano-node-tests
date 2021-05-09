@@ -211,7 +211,6 @@ def main():
 
     print(f"  ==== Write test values into the {env + '_logs_table'} DB table")
     log_values_json = ast.literal_eval(str((sync_test_results_dict["log_values"])))
-
     timestamp_list = list(log_values_json.keys())
     print(f"timestamp_list: {timestamp_list}")
     for timestamp1 in timestamp_list:
@@ -226,7 +225,8 @@ def main():
         add_test_values_into_db(env + "_logs", col_list2, col_values2)
 
     print(f"  ==== Write test values into the {env + '_epoch_duration_table'} DB table")
-    epoch_list = list(sync_test_results_dict["sync_duration_per_epoch"].keys)
+    sync_duration_values_json = ast.literal_eval(str((sync_test_results_dict["sync_duration_per_epoch"])))
+    epoch_list = list(sync_duration_values_json.keys)
     print(f"epoch_list: {epoch_list}")
     for epoch in epoch_list[:-1]:
         # ignoring the current/last epoch that is not synced completely
