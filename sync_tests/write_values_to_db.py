@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 import sqlite3
@@ -209,21 +210,20 @@ def main():
     sync_test_results_dict["identifier"] = sync_test_results_dict["env"] + "_" + str(get_last_row_no(env))
 
     print(f"  ==== Write test values into the {env + '_logs_table'} DB table")
-
+    log_values_json = ast.literal_eval(str((sync_test_results_dict["log_values"])))
 
     # TODO
-    print(f"sync_test_results_dict: {sync_test_results_dict}")
-    print(f"sync_test_results_dict['log_values']: {sync_test_results_dict['log_values']}")
-    print(f"type: {type(sync_test_results_dict['log_values'])}")
+    print(f"log_values_json: {log_values_json}")
+    print(f"type log_values_json: {type(log_values_json)}")
 
-    timestamp_list = list(sync_test_results_dict["log_values"].keys)
+    timestamp_list = list(log_values_json.keys())
     print(f"timestamp_list: {timestamp_list}")
     for timestamp1 in timestamp_list:
         line_dict = OrderedDict()
         line_dict["identifier"] = sync_test_results_dict["identifier"]
-        line_dict["slot_no"] = sync_test_results_dict["log_values"][timestamp1]["tip"]
-        line_dict["ram_bytes"] = sync_test_results_dict["log_values"][timestamp1]["ram"]
-        line_dict["cpu_percent"] = sync_test_results_dict["log_values"][timestamp1]["cpu"]
+        line_dict["slot_no"] = log_values_json[timestamp1]["tip"]
+        line_dict["ram_bytes"] = log_values_json[timestamp1]["ram"]
+        line_dict["cpu_percent"] = log_values_json[timestamp1]["cpu"]
 
         col_list2 = list(line_dict.keys())
         col_values2 = list(line_dict.values())
