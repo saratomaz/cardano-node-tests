@@ -520,7 +520,7 @@ def wait_for_node_to_sync(env, tag_no):
 
     # last_slot_no = get_calculated_slot_no(env)
     # TODO: aaaa
-    last_slot_no = 80000
+    last_slot_no = 180000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
@@ -644,8 +644,8 @@ def get_data_from_logs(log_file):
         log_file_lines = [line.rstrip() for line in f]
 
     for line in log_file_lines:
-        timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
         if "cardano.node.resources" in line:
+            timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
             ram_value = re.findall(r'"Heap",Number [-+]?[\d]+\.?[\d]*[Ee](?:[-+]?[\d]+)?', line)
             if len(ram_value) > 0:
                 ram_details_dict[timestamp] = ram_value[0].split(' ')[1]
@@ -654,6 +654,7 @@ def get_data_from_logs(log_file):
             if len(centi_cpu) > 0:
                 centi_cpu_dict[timestamp] = centi_cpu[0].split(' ')[1]
         if "new tip" in line:
+            timestamp = re.findall(r'\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}:\d{1,2}', line)[0]
             slot_no = line.split(" at slot ")[1]
             tip_details_dict[timestamp] = slot_no
 
