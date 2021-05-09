@@ -807,6 +807,12 @@ def main():
             "sync_duration_secs"]
         test_values_dict[str(era + "_sync_speed_sps")] = era_details_dict1[era]["sync_speed_sps"]
 
+
+    print("++++++++++++++++++++++++++++++++++++++++++++++")
+    print(f"epoch_details_dict1: {epoch_details_dict1}")
+    print("++++++++++++++++++++++++++++++++++++++++++++++")
+    print(f"epoch_details_dict1: {epoch_details_dict1}")
+
     print("++++++++++++++++++++++++++++++++++++++++++++++")
     epoch_details = OrderedDict()
     # ignoring the current/last epoch that is not synced completely
