@@ -520,7 +520,7 @@ def wait_for_node_to_sync(env, tag_no):
 
     # last_slot_no = get_calculated_slot_no(env)
     # TODO: aaaa
-    last_slot_no = 180000
+    last_slot_no = 80000
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
