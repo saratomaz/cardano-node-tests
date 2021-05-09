@@ -237,7 +237,7 @@ def main():
         sync_duration_per_epoch_dict = OrderedDict()
         sync_duration_per_epoch_dict["identifier"] = sync_test_results_dict["identifier"]
         sync_duration_per_epoch_dict["epoch_no"] = epoch
-        sync_duration_per_epoch_dict["sync_duration_secs"] = sync_test_results_dict["sync_duration_per_epoch"][epoch]
+        sync_duration_per_epoch_dict["sync_duration_secs"] = sync_duration_values_json[epoch]
 
         col_list3 = list(sync_duration_per_epoch_dict.keys())
         col_values3 = list(sync_duration_per_epoch_dict.values())
