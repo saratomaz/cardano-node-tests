@@ -614,8 +614,7 @@ def date_diff_in_seconds(dt2, dt1):
 
 
 def seconds_to_time(seconds_val):
-    # dt1 and dt2 should be datetime types
-    return str(datetime.timedelta(seconds=seconds_val))
+    return time.strftime("%H:%M:%S", time.gmtime(seconds_val))
 
 
 def get_no_of_slots_per_era(env, era_name):
