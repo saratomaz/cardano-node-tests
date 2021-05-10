@@ -24,25 +24,24 @@ def create_connection(db_file):
 
 
 def add_test_values_into_db(table_name, col_names_list, col_values_list):
-    print(f"Write values into {table_name} table")
+    print(f"Writing values into {table_name} table")
     current_directory = Path.cwd()
-    print(f"current_directory: {current_directory}")
+    # print(f"current_directory: {current_directory}")
     database_path = Path(current_directory) / DATABASE_NAME
-    print(f"database_path: {database_path}")
+    print(f"  -- database_path: {database_path}")
 
     col_names = ','.join(col_names_list)
     col_spaces = ','.join(['?'] * len(col_names_list))
     conn = create_connection(database_path)
+    sql_query = f"INSERT INTO {table_name} (%s) values(%s)" % (col_names, col_spaces)
+    print(f"  -- sql_query: {sql_query}")
     try:
-        sql_query = f"INSERT INTO {table_name} (%s) values(%s)" % (col_names, col_spaces)
-        print(f"sql: {sql_query}")
-
         cur = conn.cursor()
         cur.execute(sql_query, col_values_list)
         conn.commit()
         cur.close()
     except sqlite3.Error as error:
-        print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
+        print(f"  -- !!! ERROR: Failed to insert data into {table_name} table:\n", error)
         return False
     finally:
         if conn:
@@ -54,7 +53,6 @@ def export_db_table_to_csv(table_name):
     print(f"Export {table_name} table into CSV file")
     current_directory = Path.cwd()
 
-    # TODO = make it work for github actions tests
     database_path = Path(current_directory) / DATABASE_NAME
     csv_files_path = Path(current_directory) / "csv_files"
 
@@ -64,10 +62,9 @@ def export_db_table_to_csv(table_name):
     Path(csv_files_path).mkdir(parents=True, exist_ok=True)
 
     conn = create_connection(database_path)
+    sql_query = f"select * from {table_name}"
+    print(f"sql_query: {sql_query}")
     try:
-        sql_query = f"select * from {table_name}"
-        print(f"sql_query: {sql_query}")
-
         cur = conn.cursor()
         cur.execute(sql_query)
 
