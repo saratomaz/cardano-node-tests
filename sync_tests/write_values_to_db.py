@@ -26,7 +26,6 @@ def create_connection(db_file):
 def add_test_values_into_db(table_name, col_names_list, col_values_list):
     print(f"Writing values into {table_name} table")
     current_directory = Path.cwd()
-    # print(f"current_directory: {current_directory}")
     database_path = Path(current_directory) / DATABASE_NAME
     print(f"  -- database_path: {database_path}")
 
@@ -56,14 +55,14 @@ def export_db_table_to_csv(table_name):
     database_path = Path(current_directory) / DATABASE_NAME
     csv_files_path = Path(current_directory) / "csv_files"
 
-    print(f"database_path : {database_path}")
-    print(f"csv_files_path: {csv_files_path}")
+    print(f"  -- database_path : {database_path}")
+    print(f"  -- csv_files_path: {csv_files_path}")
 
     Path(csv_files_path).mkdir(parents=True, exist_ok=True)
 
     conn = create_connection(database_path)
     sql_query = f"select * from {table_name}"
-    print(f"sql_query: {sql_query}")
+    print(f"  -- sql_query: {sql_query}")
     try:
         cur = conn.cursor()
         cur.execute(sql_query)
@@ -75,7 +74,7 @@ def export_db_table_to_csv(table_name):
         conn.commit()
         cur.close()
 
-        print(f"Data exported Successfully into {csv_files_path / f'{table_name}.csv'}")
+        print(f"  -- Data exported Successfully into {csv_files_path / f'{table_name}.csv'}")
     except sqlite3.Error as error:
         print(f"!!! ERROR: Failed to insert data into {table_name} table:\n", error)
         return False
@@ -92,13 +91,11 @@ def get_column_names_from_table(env):
     print(f"current_directory: {current_directory}")
 
     database_path = Path(current_directory) / DATABASE_NAME
-    print(f"database_path: {database_path}")
+    print(f"  -- database_path: {database_path}")
     conn = create_connection(database_path)
-
+    sql_query = f"select * from {table_name}"
+    print(f"  -- sql_query: {sql_query}")
     try:
-        sql_query = f"select * from {table_name}"
-        print(f"sql_query: {sql_query}")
-
         cur = conn.cursor()
         cur.execute(sql_query)
         col_name_list = [res[0] for res in cur.description]
@@ -114,14 +111,14 @@ def get_column_names_from_table(env):
 def get_last_row_no(table_name):
     print(f"Getting the last row no from {table_name} table")
     current_directory = Path.cwd()
-    print(f"current_directory: {current_directory}")
+    print(f"  -- current_directory: {current_directory}")
 
     database_path = Path(current_directory) / DATABASE_NAME
-    print(f"database_path: {database_path}")
+    print(f"  -- database_path: {database_path}")
     conn = create_connection(database_path)
 
     sql_query = f"SELECT count(*) FROM {table_name};"
-    print(f"sql_query: {sql_query}")
+    print(f"  -- sql_query: {sql_query}")
     try:
         cur = conn.cursor()
         cur.execute(sql_query)
@@ -141,13 +138,11 @@ def add_column_to_table(env, column_name, column_type):
     current_directory = Path.cwd()
 
     database_path = Path(current_directory) / DATABASE_NAME
-    print(f"database_path: {database_path}")
+    print(f"  -- database_path: {database_path}")
     conn = create_connection(database_path)
-
+    sql_query = f"alter table {table_name} add column {column_name} {column_type}"
+    print(f"  -- sql_query: {sql_query}")
     try:
-        sql_query = f"alter table {table_name} add column {column_name} {column_type}"
-        print(f"sql_query: {sql_query}")
-
         cur = conn.cursor()
         cur.execute(sql_query)
         col_name_list = [res[0] for res in cur.description]
@@ -190,9 +185,9 @@ def main():
         '"', '').split(", ")
     print(f"eras_in_test: {eras_in_test}")
 
-    print(f"Get the column names inside the main DB tables")
+    print(f"Get the column names inside the {env} DB tables")
     table_column_names = get_column_names_from_table(env)
-    print(f"table_column_names: {table_column_names}")
+    print(f"  -- table_column_names: {table_column_names}")
 
     for era in eras_in_test:
         era_columns = [i for i in table_column_names if i.startswith(era)]
@@ -223,10 +218,6 @@ def main():
 
     print(f"  ==== Write test values into the {env + '_epoch_duration_table'} DB table")
     sync_duration_values_json = ast.literal_eval(str(sync_test_results_dict["sync_duration_per_epoch"]))
-
-    print(f"sync_duration_values_json: {sync_duration_values_json}")
-    print(f"type(sync_duration_values_json): {type(sync_duration_values_json)}")
-
     epoch_list = list(sync_duration_values_json.keys())
     print(f"epoch_list: {epoch_list}")
     for epoch in epoch_list[:-1]:
@@ -251,8 +242,8 @@ def main():
     print(f"  ==== Exporting the {env} table as CSV")
     export_db_table_to_csv(env)
 
-    print(f"  ==== Exporting the {env + '_logs_table'} table as CSV")
-    export_db_table_to_csv(env + '_logs_table')
+    print(f"  ==== Exporting the {env + '_logs'} table as CSV")
+    export_db_table_to_csv(env + '_logs')
 
     print(f"  ==== Exporting the {env + '_epoch_duration'} table as CSV")
     export_db_table_to_csv(env + '_epoch_duration')

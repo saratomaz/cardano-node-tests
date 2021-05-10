@@ -89,6 +89,7 @@ def git_get_commit_sha_for_tag_no(tag_no):
         count += 1
         response = requests.get(url)
         if count > 10:
+            print(f"!!!! ERROR: Could not get the commit sha for tag {tag_no} after {count} retries")
             response.raise_for_status()
     jData = json.loads(response.content)
 
@@ -518,9 +519,7 @@ def wait_for_node_to_sync(env, tag_no):
     era_details_dict = OrderedDict()
     epoch_details_dict = OrderedDict()
 
-    # last_slot_no = get_calculated_slot_no(env)
-    # TODO:
-    last_slot_no = 80000
+    last_slot_no = get_calculated_slot_no(env)
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
