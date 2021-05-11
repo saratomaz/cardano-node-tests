@@ -303,10 +303,6 @@ def get_no_of_cpu_cores():
     return os.cpu_count()
 
 
-def get_available_ram():
-    return os.ram
-
-
 def get_epoch_no_d_zero():
     env = vars(args)["environment"]
     if env == "mainnet":
