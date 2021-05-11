@@ -303,6 +303,24 @@ def get_no_of_cpu_cores():
     return os.cpu_count()
 
 
+def get_available_ram():
+    return os.ram
+
+
+def get_epoch_no_d_zero():
+    env = vars(args)["environment"]
+    if env == "mainnet":
+        return 257
+    elif env == "testnet":
+        return 121
+    elif env == "staging":
+        return None
+    elif env == "shelley_qa":
+        return 2554
+    else:
+        return None
+
+
 def get_testnet_value():
     env = vars(args)["environment"]
     if env == "mainnet":
@@ -342,9 +360,6 @@ def get_current_tip(tag_no=None, timeout_seconds=10):
                     .strip()
             )
             output_json = json.loads(output)
-
-            print(f"output_json: {output_json}")
-
             if output_json["epoch"] is not None:
                 output_json["epoch"] = int(output_json["epoch"])
 
@@ -527,10 +542,11 @@ def wait_for_node_to_sync(env, tag_no):
 
     count = 0
     while actual_slot <= last_slot_no:
-        print(f"actual_era  : {actual_era} "
-              f" - actual_epoch: {actual_epoch} "
-              f" - actual_block: {actual_block} "
-              f" - actual_slot : {actual_slot}")
+        if count % 60 == 0:
+            print(f"actual_era  : {actual_era} "
+                  f" - actual_epoch: {actual_epoch} "
+                  f" - actual_block: {actual_block} "
+                  f" - actual_slot : {actual_slot}")
         if actual_era not in era_details_dict:
             if actual_epoch is None:
                 # TODO: to remove this after 'tip' bug returning None/null will be fixed
@@ -840,6 +856,7 @@ def main():
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
     test_values_dict["eras_in_test"] = json.dumps(list(era_details_dict1.keys()))
     test_values_dict["no_of_cpu_cores"] = get_no_of_cpu_cores()
+    test_values_dict["epoch_no_d_zero,"] = get_epoch_no_d_zero()
 
     os.chdir(Path(ROOT_TEST_PATH))
     current_directory = Path.cwd()

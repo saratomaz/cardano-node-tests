@@ -24,7 +24,6 @@ def create_connection(db_file):
 
 
 def add_test_values_into_db(table_name, col_names_list, col_values_list):
-    print(f"Writing values into {table_name} table")
     current_directory = Path.cwd()
     database_path = Path(current_directory) / DATABASE_NAME
     print(f"  -- database_path: {database_path}")
@@ -165,6 +164,7 @@ def main():
     with open(RESULTS_FILE_NAME, "r") as json_file:
         sync_test_results_dict = json.load(json_file)
 
+    print("Print all test results (key/values)")
     for key in sync_test_results_dict:
         print(f"{key}: {sync_test_results_dict[key]}")
 
@@ -193,9 +193,12 @@ def main():
         era_columns = [i for i in table_column_names if i.startswith(era)]
         if len(era_columns) == 0:
             print(f" === Adding columns for {era} era into the the {env} table")
-            new_columns_list = [str(era + "_start_time"), str(era + "_start_epoch"),
-                                str(era + "_slots_in_era"), str(era + "_start_sync_time"),
-                                str(era + "_end_sync_time"), str(era + "_sync_duration_secs")]
+            new_columns_list = [str(era + "_start_time"),
+                                str(era + "_start_epoch"),
+                                str(era + "_slots_in_era"),
+                                str(era + "_start_sync_time"),
+                                str(era + "_end_sync_time"),
+                                str(era + "_sync_duration_secs")]
             for column_name in new_columns_list:
                 add_column_to_table(env, column_name, "TEXT")
 
