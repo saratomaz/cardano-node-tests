@@ -8,6 +8,7 @@ import signal
 import subprocess
 import tarfile
 
+import psutil
 import requests
 import time
 import urllib.request
@@ -83,10 +84,10 @@ def git_get_commit_sha_for_tag_no(tag_no):
     url = "https://api.github.com/repos/input-output-hk/cardano-node/tags"
     response = requests.get(url)
 
-    # there is a rate limit for the provided url that we want to overpass with the below while loop
+    # there is a rate limit for the provided url that we want to overpass with the below loop
     count = 0
     while not response.ok:
-        time.sleep(random.randint(30, 60))
+        time.sleep(random.randint(30, 240))
         count += 1
         response = requests.get(url)
         if count > 10:
@@ -304,6 +305,10 @@ def get_no_of_cpu_cores():
     return os.cpu_count()
 
 
+def get_total_ram_in_GB():
+    return int(psutil.virtual_memory().total / 1000000000)
+
+
 def get_epoch_no_d_zero():
     env = vars(args)["environment"]
     if env == "mainnet":
@@ -314,6 +319,21 @@ def get_epoch_no_d_zero():
         return None
     elif env == "shelley_qa":
         return 2554
+    else:
+        return None
+
+
+def get_start_slot_no_d_zero():
+    env = vars(args)["environment"]
+
+    if env == "mainnet":
+        return 25661009
+    elif env == "testnet":
+        return 21902400
+    elif env == "staging":
+        return None
+    elif env == "shelley_qa":
+        return 18375135
     else:
         return None
 
@@ -531,8 +551,7 @@ def wait_for_node_to_sync(env, tag_no):
     era_details_dict = OrderedDict()
     epoch_details_dict = OrderedDict()
 
-    # last_slot_no = get_calculated_slot_no(env)
-    last_slot_no = 80000
+    last_slot_no = get_calculated_slot_no(env)
 
     actual_epoch, actual_block, actual_hash, actual_slot, actual_era = get_current_tip(tag_no)
 
@@ -635,15 +654,16 @@ def seconds_to_time(seconds_val):
 
 def get_no_of_slots_in_era(env, era_name, no_of_epochs_in_era):
     slot_length_secs = 1
+    epoch_length_slots = 432000
+
     if era_name.lower() == "byron":
         slot_length_secs = 20
-
     if env == "shelley_qa":
-        epoch_length_secs = 7200 * slot_length_secs
-    else:
-        epoch_length_secs = 432000 * slot_length_secs
+        epoch_length_slots = 7200
 
-    return int(epoch_length_secs / slot_length_secs) * no_of_epochs_in_era
+    epoch_length_secs = int(epoch_length_slots / slot_length_secs)
+
+    return int(epoch_length_secs * no_of_epochs_in_era)
 
 
 def get_data_from_logs(log_file):
@@ -859,7 +879,9 @@ def main():
     test_values_dict["sync_duration_per_epoch"] = json.dumps(epoch_details)
     test_values_dict["eras_in_test"] = json.dumps(list(era_details_dict1.keys()))
     test_values_dict["no_of_cpu_cores"] = get_no_of_cpu_cores()
+    test_values_dict["total_ram_in_GB"] = get_total_ram_in_GB()
     test_values_dict["epoch_no_d_zero"] = get_epoch_no_d_zero()
+    test_values_dict["start_slot_no_d_zero"] = get_start_slot_no_d_zero()
 
     os.chdir(Path(ROOT_TEST_PATH))
     current_directory = Path.cwd()
