@@ -744,6 +744,12 @@ def main():
     print(f"node_tag_no1: {tag_no1}")
     print(f"node_tag_no2: {tag_no2}")
 
+    db_sync_tag_no1 = str(vars(args)["db_sync_tag_no1"]).strip()
+    db_sync_tag_no2 = str(vars(args)["db_sync_tag_no1"]).strip()
+    if db_sync_tag_no1 is not None:
+        print(f"db_sync_tag_no1: {db_sync_tag_no1}")
+        print(f"db_sync_tag_no2: {db_sync_tag_no2}")
+
     platform_system, platform_release, platform_version = get_os_type()
     print(f"platform: {platform_system, platform_release, platform_version}")
 
