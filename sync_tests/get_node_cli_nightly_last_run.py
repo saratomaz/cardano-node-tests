@@ -57,7 +57,7 @@ def main():
     csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
     print(f"  -- csv_files_path: {csv_files_path}")
 
-    with open(NIGHTLY_FILENAME, 'w=', encoding='utf-8') as file:
+    with open(NIGHTLY_FILENAME, 'w+', encoding='utf-8') as file:
         json.dump(nightly_build_dict, file, ensure_ascii=False, indent=4)
 
 
