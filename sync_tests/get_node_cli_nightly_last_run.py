@@ -54,7 +54,7 @@ def main():
     print(f"Exporting the Nightly results into CSV file - {CSV_FILENAME}")
     current_directory = Path.cwd()
 
-    csv_files_path = Path(current_directory) / "csv_files"
+    csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
     print(f"  -- csv_files_path: {csv_files_path}")
 
     field_names = ["start_time", "duration", "branch", "commit_no", "status", "link"]
