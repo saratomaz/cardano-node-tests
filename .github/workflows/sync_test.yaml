@@ -84,7 +84,11 @@ jobs:
           git config pull.rebase true
           git pull origin dorin/sync_test1
 
-          python sync_tests/write_values_to_db.py -e ${{ matrix.env }}
+          cd "sync_tests"
+
+          python write_values_to_db.py -e ${{ matrix.env }}
+
+          cd cardano_node_tests
 
           git add sync_tests/sync_tests_results.db
           git add sync_tests/csv_files
