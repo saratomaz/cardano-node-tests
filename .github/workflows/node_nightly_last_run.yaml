@@ -39,7 +39,7 @@ jobs:
         run: |
           cd cardano_node_tests
           echo "current branch2: $(git branch --show-current)"
-          python sync_tests/get_node_cli_nightly_last_run.py -s ${{ secrets.BUILDKITE_API_ACCESS_TOKEN }}
+          python sync_tests/get_node_cli_nightly_last_run.py -t ${{ secrets.BUILDKITE_API_ACCESS_TOKEN }}
       - name: commit and push changes
         run: |
           cd cardano_node_tests

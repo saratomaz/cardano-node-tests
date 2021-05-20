@@ -69,7 +69,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get node cli nightly results\n\n")
 
     parser.add_argument(
-        "-s", "--secret", help="buildkite secret"
+        "-t", "--secret", help="buildkite secret"
     )
 
     args = parser.parse_args()
