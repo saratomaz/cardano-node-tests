@@ -61,8 +61,7 @@ def main():
     with open(CSV_FILENAME, 'w+') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=field_names)
         writer.writeheader()
-        for key, value in nightly_build_dict.items():
-            writer.writerow([key, value])
+        writer.writerows(nightly_build_dict)
 
 
 if __name__ == "__main__":
