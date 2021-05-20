@@ -1,4 +1,4 @@
-name: cli nightly results for report
+name: node cli nighlty results
 
 on:
   schedule:
