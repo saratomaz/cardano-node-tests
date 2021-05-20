@@ -1,4 +1,5 @@
 import csv
+import json
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -10,7 +11,7 @@ from utils import date_diff_in_seconds, seconds_to_time
 
 ORG_SLUG = "input-output-hk"
 PIPELINE_SLUG = "cardano-node-tests-nightly"
-CSV_FILENAME = "nightly_build.csv"
+NIGHTLY_FILENAME = "nightly_build.json"
 
 
 def get_pipeline_builds(BUILDKITE_TOKEN):
@@ -57,11 +58,8 @@ def main():
     csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
     print(f"  -- csv_files_path: {csv_files_path}")
 
-    field_names = ["start_time", "duration", "branch", "commit_no", "status", "link"]
-    with open(CSV_FILENAME, 'w+') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=field_names)
-        writer.writeheader()
-        writer.writerows(nightly_build_dict)
+    with open(NIGHTLY_FILENAME, 'w=', encoding='utf-8') as file:
+        json.dump(nightly_build_dict, file, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
