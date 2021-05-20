@@ -1,4 +1,5 @@
 import json
+import os
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -51,14 +52,17 @@ def main():
     for el in nightly_build_dict:
         print(f"{el} --> {nightly_build_dict[el]}")
 
-    print(f"Exporting the Nightly results into json file - {NIGHTLY_FILENAME}")
     current_directory = Path.cwd()
+    json_files_path = Path(current_directory) / "sync_tests" / "csv_files" / NIGHTLY_FILENAME
+    print(f"Exporting the Nightly results into json file - {json_files_path}")
+    print(f"  -- json_files_path: {json_files_path}")
 
-    csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
-    print(f"  -- csv_files_path: {csv_files_path}")
-
-    with open(NIGHTLY_FILENAME, 'w+', encoding='utf-8') as file:
+    with open(json_files_path, 'w+', encoding='utf-8') as file:
         json.dump(nightly_build_dict, file, ensure_ascii=False, indent=4)
+
+    current_directory = os.getcwd()
+    print(f" - current_directory: {current_directory}")
+    print(f" - listdir: {Path(current_directory) / 'sync_tests' / 'csv_files'}")
 
 
 if __name__ == "__main__":
