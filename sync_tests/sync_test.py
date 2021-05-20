@@ -21,7 +21,7 @@ from psutil import process_iter
 current_directory = os.getcwd()
 print(f" - current_directory aaa: {current_directory}")
 
-from sync_tests.utils import seconds_to_time, date_diff_in_seconds, get_no_of_cpu_cores, \
+from utils import seconds_to_time, date_diff_in_seconds, get_no_of_cpu_cores, \
     get_current_date_time, get_os_type, get_directory_size, get_total_ram_in_GB
 
 NODE = "./cardano-node"

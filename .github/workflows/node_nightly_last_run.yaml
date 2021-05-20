@@ -1,4 +1,4 @@
-name: get cli nightly results for report
+name: cli nightly results for report
 
 on:
   schedule:
