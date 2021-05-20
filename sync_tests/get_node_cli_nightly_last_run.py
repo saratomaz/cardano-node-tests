@@ -1,4 +1,3 @@
-import csv
 import json
 from collections import OrderedDict
 from datetime import datetime
@@ -52,7 +51,7 @@ def main():
     for el in nightly_build_dict:
         print(f"{el} --> {nightly_build_dict[el]}")
 
-    print(f"Exporting the Nightly results into CSV file - {CSV_FILENAME}")
+    print(f"Exporting the Nightly results into json file - {NIGHTLY_FILENAME}")
     current_directory = Path.cwd()
 
     csv_files_path = Path(current_directory) / "sync_tests" / "csv_files"
