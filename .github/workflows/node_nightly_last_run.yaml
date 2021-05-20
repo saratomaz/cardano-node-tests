@@ -38,7 +38,6 @@ jobs:
       - name: get the cli nightly results for the latest run
         run: |
           cd cardano_node_tests
-          cd
           echo "current branch2: $(git branch --show-current)"
           python sync_tests/get_node_cli_nightly_last_run.py -t ${{ secrets.BUILDKITE_API_ACCESS_TOKEN }}
       - name: commit and push changes
