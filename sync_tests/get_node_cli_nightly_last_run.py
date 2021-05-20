@@ -6,7 +6,7 @@ from pathlib import Path
 import argparse
 import requests
 
-from sync_tests.utils import date_diff_in_seconds, seconds_to_time
+from utils import date_diff_in_seconds, seconds_to_time
 
 ORG_SLUG = "input-output-hk"
 PIPELINE_SLUG = "cardano-node-tests-nightly"
