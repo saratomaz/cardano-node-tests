@@ -62,7 +62,6 @@ def main():
 
     current_directory = os.getcwd()
     print(f" - current_directory: {current_directory}")
-    print(f" - listdir: {Path(current_directory) / 'sync_tests' / 'csv_files'}")
 
 
 if __name__ == "__main__":
