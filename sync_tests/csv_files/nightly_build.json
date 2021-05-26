@@ -1,9 +1,9 @@
 {
-    "start_time": "2021-05-25T00:03:50.000Z",
-    "finished_at": "2021-05-25T01:35:38.000Z",
-    "duration": "01:31:48",
+    "start_time": "2021-05-26T00:02:43.000Z",
+    "finished_at": "2021-05-26T01:25:01.000Z",
+    "duration": "01:22:18",
     "branch": "master",
-    "commit_no": "e4a4da2fa9869f7714f8696ef1b3730c070bb36b",
-    "status": "failed",
-    "link": "https://buildkite.com/input-output-hk/cardano-node-tests-nightly/builds/242"
+    "commit_no": "d234106c2259099c16b2b43c0d26cc085300a556",
+    "status": "passed",
+    "link": "https://buildkite.com/input-output-hk/cardano-node-tests-nightly/builds/244"
 }
