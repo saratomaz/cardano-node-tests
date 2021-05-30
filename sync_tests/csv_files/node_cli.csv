@@ -5,3 +5,4 @@ build_id,build_no,build_started_at,build_finished_at,build_duration,build_status
 451400e6-7fee-4ed8-8185-4056172472ee,3,2021-05-26T12:46:13.000Z,2021-05-26T12:47:43.000Z,00:01:30,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/3,master,1.27.0,,mary,mary
 96045436-7284-4300-8dec-f062152754a9,2,2021-05-26T12:30:20.000Z,2021-05-26T12:32:44.000Z,00:02:24,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/2,master,,1.27.0,mary,mary
 5c0adcc2-0210-448d-b916-720d103fc9e5,1,2021-05-26T07:51:23.000Z,2021-05-26T09:10:42.000Z,01:19:19,passed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/1,master,,,,allegra
+fc0c959d-3cfe-4af9-8c6f-c06723801a37,7,2021-05-28T09:55:13.000Z,2021-05-28T11:11:06.000Z,01:15:53,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/7,master,,,,shelley

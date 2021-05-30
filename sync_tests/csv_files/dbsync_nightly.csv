@@ -5,3 +5,5 @@ build_id,build_no,build_started_at,build_finished_at,build_duration,build_status
 ba2fb58c-cd2d-406e-a5a8-d863457c0c62,47,2021-05-24T19:16:11.000Z,2021-05-24T20:13:05.000Z,00:56:54,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/47,ci_jobs_revs,master,,master,
 d667153b-8a64-42a5-99b7-ea3b67b79769,46,2021-05-24T19:12:51.000Z,2021-05-24T19:13:08.000Z,00:00:17,failed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/46,ci_jobs_revs,master,,master,
 d6644f97-ef99-40f3-af12-3e26c3c840d4,51,2021-05-28T00:04:20.000Z,2021-05-28T00:59:38.000Z,00:55:18,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/51,master,master,,master,
+e55b713e-d030-4ec9-9929-5539e7ee9436,53,2021-05-30T00:02:50.000Z,2021-05-30T01:17:21.000Z,01:14:31,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/53,master,master,,master,
+8524eca7-ce15-4a7b-b237-dd10a5708c88,52,2021-05-29T00:02:10.000Z,2021-05-29T01:00:13.000Z,00:58:03,failed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/52,master,master,,master,
