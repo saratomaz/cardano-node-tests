@@ -6,3 +6,7 @@ build_id,build_no,build_started_at,build_finished_at,build_duration,build_status
 96045436-7284-4300-8dec-f062152754a9,2,2021-05-26T12:30:20.000Z,2021-05-26T12:32:44.000Z,00:02:24,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/2,master,,1.27.0,mary,mary
 5c0adcc2-0210-448d-b916-720d103fc9e5,1,2021-05-26T07:51:23.000Z,2021-05-26T09:10:42.000Z,01:19:19,passed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/1,master,,,,allegra
 fc0c959d-3cfe-4af9-8c6f-c06723801a37,7,2021-05-28T09:55:13.000Z,2021-05-28T11:11:06.000Z,01:15:53,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/7,master,,,,shelley
+29ae985d-5e2a-4c37-a61e-3c8893827244,11,2021-06-01T14:29:05.000Z,2021-06-01T15:45:09.000Z,01:16:04,passed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/11,alonzo_fixes,,alonzo-blue1.0,mary,allegra
+b73997a8-3159-4f6c-aaeb-c41f5e742163,10,2021-06-01T14:28:25.000Z,2021-06-01T15:40:30.000Z,01:12:05,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/10,alonzo_fixes,,alonzo-blue1.0,alonzo,mary
+72d6486c-4833-4ec3-a0c3-d02af2836609,9,2021-06-01T14:27:55.000Z,2021-06-01T16:03:39.000Z,01:35:44,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/9,alonzo_fixes,,alonzo-blue1.0,mary,
+74c3c32a-d0ed-4972-998a-162e0d38724f,8,2021-06-01T12:35:25.000Z,2021-06-01T14:04:02.000Z,01:28:37,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/8,alonzo_fixes,,alonzo-blue1.0,alonzo,mary
