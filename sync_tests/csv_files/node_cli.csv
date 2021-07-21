@@ -25,3 +25,7 @@ cbd94ed9-8aad-4d2c-ba4d-a9cd954a6c6b,22,2021-07-13T10:21:07.000Z,2021-07-13T11:5
 1e3a3cbe-d5e1-473d-932e-12bd1c4b0f88,25,2021-07-19T16:12:27.000Z,2021-07-19T17:35:06.000Z,01:22:39,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/25,master,,alonzo-white-1.2,alonzo,alonzo
 a09c13a3-a403-475d-9036-06caed0f4668,24,2021-07-19T16:04:37.000Z,2021-07-19T16:13:22.000Z,00:08:45,canceled,https://buildkite.com/input-output-hk/cardano-node-tests/builds/24,master,,alonzo-white-1.1,alonzo,mary
 ba2eff96-888a-4de9-b0fd-88a1834e3514,23,2021-07-19T16:04:39.000Z,2021-07-19T16:13:02.000Z,00:08:23,canceled,https://buildkite.com/input-output-hk/cardano-node-tests/builds/23,master,,alonzo-white-1.1,alonzo,alonzo
+bec12179-4abe-4cdd-8283-15e69a71f1f0,30,2021-07-20T20:26:37.000Z,2021-07-20T21:41:46.000Z,01:15:09,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/30,master,,alonzo-white-1.2,alonzo,mary
+ec213860-e4ed-47b7-af95-2056fc955bf0,29,2021-07-20T17:48:27.000Z,2021-07-20T19:58:44.000Z,02:10:17,passed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/29,master,,alonzo-white-1.2,alonzo,alonzo
+1a5b1a6a-143a-463e-8870-2a56598f5981,28,2021-07-20T10:34:59.000Z,2021-07-20T11:37:22.000Z,01:02:23,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/28,master,,alonzo-white-1.2,alonzo,mary
+2b1a7a39-7e5b-4fac-b5bd-c0bad3bb2d13,27,2021-07-20T10:34:39.000Z,2021-07-20T11:47:02.000Z,01:12:23,failed,https://buildkite.com/input-output-hk/cardano-node-tests/builds/27,master,,alonzo-white-1.2,alonzo,alonzo
