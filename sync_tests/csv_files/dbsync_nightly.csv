@@ -146,3 +146,4 @@ d60a5f48-0688-45ac-a8e3-f3848455df99,185,2021-10-12T02:30:52.933Z,2021-10-12T03:
 5b0f264c-7552-4fb1-92b7-a4aca1167934,190,2021-10-17T02:30:40.692Z,2021-10-17T03:46:18.860Z,1:15:38,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/190,master,master,,master,,mary,mary
 83dc733c-48ac-4348-a5a5-30215c6625c1,191,2021-10-18T02:30:50.619Z,2021-10-18T03:53:48.006Z,1:22:57,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/191,master,master,,master,,mary,mary
 bfee9061-209c-4d5c-91f6-215720806112,192,2021-10-19T02:30:50.924Z,2021-10-19T02:59:46.505Z,0:28:55,failed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/192,master,master,,master,,mary,mary
+3bc82690-81e1-4444-b11f-6ad83a2f9542,193,2021-10-20T02:31:00.715Z,2021-10-20T03:37:27.530Z,1:06:26,failed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-dbsync/builds/193,master,master,,master,,mary,mary
