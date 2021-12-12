@@ -609,3 +609,5 @@ c00cfd6f-b736-4d5f-825a-9f84139a64a6,444,2021-12-10T22:01:58.650Z,2021-12-11T00:
 875895b4-0594-47d6-b05e-6c3b249cf45f,443,2021-12-09T22:03:13.033Z,2021-12-10T00:19:54.883Z,2:16:41,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly/builds/443,master,master,,mary,mary
 fc309d88-9c8b-4f3f-ad92-6e444be08370,187,2021-12-11T01:01:33.363Z,2021-12-11T03:22:18.948Z,2:20:45,failed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-mary-tx/builds/187,master,master,,alonzo,mary
 f51c9467-fdce-43f2-bc99-5674f790f668,186,2021-12-10T01:02:48.701Z,2021-12-10T03:29:51.909Z,2:27:03,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-mary-tx/builds/186,master,master,,alonzo,mary
+7b77261e-9501-4851-a99c-2aa77b6460d5,445,2021-12-11T22:01:18.583Z,2021-12-12T00:39:52.571Z,2:38:33,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly/builds/445,master,master,,mary,mary
+c5a1e2dc-ff99-4d66-8f5d-954d93cab74a,188,2021-12-12T01:01:08.600Z,2021-12-12T03:05:56.028Z,2:04:47,passed,https://buildkite.com/input-output-hk/cardano-node-tests-nightly-mary-tx/builds/188,master,master,,alonzo,mary
