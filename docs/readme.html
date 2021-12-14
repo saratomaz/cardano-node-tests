@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>README for cardano-node-tests &mdash; cardano-node-tests  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Source Documentation" href="modules.html" />
+    <link rel="prev" title="Welcome to cardano-node-test’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> cardano-node-tests
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">README for cardano-node-tests</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#variables-for-make-tests-and-make-testnets">Variables for <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">tests</span></code> and <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">testnets</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tests-development">Tests development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-coverage-of-cardano-cli-commands">Test coverage of cardano-cli commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publishing-testing-results">Publishing testing results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-documentation">Building documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Source Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">cardano-node-tests</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>README for cardano-node-tests</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readme.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <a class="reference external image-reference" href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
+<div class="section" id="readme-for-cardano-node-tests">
+<h1>README for cardano-node-tests<a class="headerlink" href="#readme-for-cardano-node-tests" title="Permalink to this headline">¶</a></h1>
+<p>Integration tests for cardano-node.</p>
+<p>For more details check the <a class="reference external" href="https://github.com/input-output-hk/cardano-node-tests/tree/master/doc">doc</a> folder</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Create a python virtual env and install this package together with dev requirements:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ ./setup_venv.sh
+</pre></div>
+</div>
+<p>Requires Python 3.8 or newer.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Preparing env:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># cd to cardano-node repo</span>
+$ <span class="nb">cd</span> &lt;your path to cardano-node repo&gt;
+<span class="c1"># update and checkout the desired commit/tag</span>
+$ git checkout master
+$ git pull origin master
+$ git fetch --all --tags
+$ git checkout tags/&lt;tag&gt;
+<span class="c1"># launch devops shell</span>
+$ nix-shell -A devops
+<span class="c1"># cd to tests repo</span>
+$ <span class="nb">cd</span> &lt;your path to cardano-node-test repo&gt;
+<span class="c1"># activate virtual env</span>
+$ . .env/bin/activate
+</pre></div>
+</div>
+<p>Running tests on local cluster (local cluster instances will be started automatically during test run setup):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># set env variables</span>
+$ <span class="nb">export</span> <span class="nv">CARDANO_NODE_SOCKET_PATH</span><span class="o">=</span>&lt;your path to cardano-node repo&gt;/state-cluster0/bft1.socket
+<span class="c1"># run tests</span>
+$ make tests
+</pre></div>
+</div>
+<p>Running tests on one of the testnets:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># set env variables</span>
+$ <span class="nb">export</span> <span class="nv">CARDANO_NODE_SOCKET_PATH</span><span class="o">=</span>&lt;your path to cardano-node repo&gt;/state-cluster0/relay1.socket
+<span class="c1"># run tests</span>
+$ <span class="nv">BOOTSTRAP_DIR</span><span class="o">=</span>&lt;your path to bootstrap dir&gt; make testnets
+</pre></div>
+</div>
+<p>Running individual tests:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ pytest -k <span class="s2">&quot;test_name1 or test_name2&quot;</span> cardano_node_tests
+</pre></div>
+</div>
+<p>Running linter:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># activate virtual env</span>
+$ . .env/bin/activate
+<span class="c1"># run linter</span>
+$ make lint
+</pre></div>
+</div>
+</div>
+<div class="section" id="variables-for-make-tests-and-make-testnets">
+<h2>Variables for <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">tests</span></code> and <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">testnets</span></code><a class="headerlink" href="#variables-for-make-tests-and-make-testnets" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SCHEDULING_LOG</span></code> - specifies path to file where log messages for tests and cluster instance scheduler are stored</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PYTEST_ARGS</span></code> - specifies additional arguments for pytest</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MARKEXPR</span></code> - specifies marker expression for pytest</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_THREADS</span></code> - specifies number of pytest workers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CLUSTERS_COUNT</span></code> - number of cluster instances that will be started</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CLUSTER_ERA</span></code> - cluster era for cardano node - used for selecting correct cluster start script</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TX_ERA</span></code> - era for transactions - can be used for creating Shelley-era (Allegra-era, …) transactions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NOPOOLS</span></code> - when running tests on testnet, a cluster with no staking pools will be created</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BOOTSTRAP_DIR</span></code> - path to a bootstrap dir for given testnet (genesis files, config files, faucet data)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SCRIPTS_DIRNAME</span></code> - path to a dir with local cluster start / stop scripts and configuration files</p></li>
+</ul>
+<p>E.g.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">SCHEDULING_LOG</span><span class="o">=</span>testrun_20211012_1.log <span class="nv">TEST_THREADS</span><span class="o">=</span><span class="m">3</span> <span class="nv">CLUSTER_ERA</span><span class="o">=</span>alonzo <span class="nv">TX_ERA</span><span class="o">=</span>mary <span class="nv">SCRIPTS_DIRNAME</span><span class="o">=</span>cardano_node_tests/cluster_scripts/alonzo/ <span class="nv">PYTEST_ARGS</span><span class="o">=</span><span class="s2">&quot;-k &#39;test_stake_pool_low_cost or test_reward_amount&#39;&quot;</span> <span class="nv">MARKEXPR</span><span class="o">=</span><span class="s2">&quot;not long&quot;</span> make tests
+</pre></div>
+</div>
+</div>
+<div class="section" id="tests-development">
+<h2>Tests development<a class="headerlink" href="#tests-development" title="Permalink to this headline">¶</a></h2>
+<p>When running tests, the testing framework starts and stops cluster instances as needed. That is not ideal for tests development, as starting a cluster instance takes several epochs (to get from Byron to Alonzo). To keep cardano cluster running in-between test runs, one needs to start it in “development mode”.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># activate virtual env</span>
+$ . .env/bin/activate
+<span class="c1"># prepare cluster scripts</span>
+$ prepare-cluster-scripts -d &lt;destination dir&gt;/alonzo -s cardano_node_tests/cluster_scripts/alonzo/
+<span class="c1"># set env variables</span>
+$ <span class="nb">export</span> <span class="nv">CARDANO_NODE_SOCKET_PATH</span><span class="o">=</span>&lt;your path to cardano-node repo&gt;/state-cluster0/bft1.socket <span class="nv">DEV_CLUSTER_RUNNING</span><span class="o">=</span><span class="m">1</span>
+<span class="c1"># start the cluster instance in development mode</span>
+$ &lt;destination dir&gt;/alonzo/start-cluster-hfc
+</pre></div>
+</div>
+<p>After starting the cluster, keys and configuration files are available in the <code class="docutils literal notranslate"><span class="pre">&lt;your</span> <span class="pre">path</span> <span class="pre">to</span> <span class="pre">cardano-node</span> <span class="pre">repo&gt;/state-cluster0</span></code> directory. The pools-related files and keys are located in the <code class="docutils literal notranslate"><span class="pre">nodes</span></code> subdirectory, genesis keys in the <code class="docutils literal notranslate"><span class="pre">shelley</span></code> and <code class="docutils literal notranslate"><span class="pre">byron</span></code> subdirectories, payment address with initial funds and related keys in the <code class="docutils literal notranslate"><span class="pre">byron</span></code> subdirectory. Local faucet address and related key files are stored in the <code class="docutils literal notranslate"><span class="pre">addrs_data</span></code> subdirectory.</p>
+</div>
+<div class="section" id="test-coverage-of-cardano-cli-commands">
+<h2>Test coverage of cardano-cli commands<a class="headerlink" href="#test-coverage-of-cardano-cli-commands" title="Permalink to this headline">¶</a></h2>
+<p>To get test coverage of cardano-cli commands, run tests as usual (<code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">tests</span></code>) and generate the coverage report JSON file with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cardano-cli-coverage -i .cli_coverage/cli_coverage_*.json -o .cli_coverage/coverage_report.json
+</pre></div>
+</div>
+</div>
+<div class="section" id="publishing-testing-results">
+<h2>Publishing testing results<a class="headerlink" href="#publishing-testing-results" title="Permalink to this headline">¶</a></h2>
+<p>Clone <a class="reference external" href="https://github.com/mkoura/cardano-node-tests-reports">https://github.com/mkoura/cardano-node-tests-reports</a> and see its <a class="reference external" href="https://github.com/mkoura/cardano-node-tests-reports/blob/main/README.md">README</a>.</p>
+</div>
+<div class="section" id="building-documentation">
+<h2>Building documentation<a class="headerlink" href="#building-documentation" title="Permalink to this headline">¶</a></h2>
+<p>To build documentation using Sphinx, run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make doc
+</pre></div>
+</div>
+<p>The documentation is generated to <code class="docutils literal notranslate"><span class="pre">src_docs/build/html</span></code>.</p>
+<p>To publish documentation to <a class="reference external" href="https://input-output-hk.github.io/cardano-node-tests/">https://input-output-hk.github.io/cardano-node-tests/</a>, run:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># checkout the &quot;github_pages&quot; branch</span>
+$ git checkout github_pages
+<span class="c1"># copy/move content of src_docs/build/html to src_docs</span>
+$ rm -rf docs/*
+$ cp -aT src_docs/build/html docs
+<span class="c1"># stage changes</span>
+$ git add docs
+<span class="c1"># commit changes</span>
+$ git commit
+<span class="c1"># push to origin/github_pages (upstream/github_pages)</span>
+$ git push origin github_pages
+</pre></div>
+</div>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>Install this package and its dependencies as described above.</p>
+<p>Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code> to set up the git hook scripts that will check you changes before every commit. Alternatively run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">lint</span></code> manually before pushing your changes.</p>
+<p>Follow the <a class="reference external" href="https://google.github.io/styleguide/pyguide.html">Google Python Style Guide</a>, with the exception that formatting is handled automatically by <a class="reference external" href="https://github.com/psf/black">Black</a> (through <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> command).</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to cardano-node-test’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="Source Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 1980, Cardano QA Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
